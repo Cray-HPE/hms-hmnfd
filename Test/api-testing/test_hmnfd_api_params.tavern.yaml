@@ -1,0 +1,162 @@
+---
+
+# This test exercises the /params API in hmnfd.  Note that not all
+# parameters are changeable via the ReST interface -- some of them
+# are read-only.
+#
+# Required to run: hmnfd only.
+# Destructive: YES
+# 
+
+test_name: HMNFD /params API test
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Testing /params API PATCH/GET test
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Debug: 3
+        KV_url: http://localhost:2379
+        Nosm: 1
+        SM_retries: 4
+        SM_timeout: 11
+        SM_url: http://localhost:27999/hsm/v1
+        Telemetry_host: localhost:9092:notifications
+        Use_telemetry: 0
+    response:
+      status_code: 200
+
+  - name: Testing /params API Debug GET
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Debug: 3
+        KV_url: http://localhost:2379
+        Nosm: 1
+        Port: !anyint
+        SM_retries: 4
+        SM_timeout: 11
+        SM_url: http://localhost:27999/hsm/v1
+        Scn_in_url: !anystr
+        Telemetry_host: !anystr
+        Use_telemetry: 0
+
+---
+
+# TODO: add checking of error response JSON text
+
+test_name: HMNFD /params error PATCH test
+includes:
+  - !include common.yaml
+
+stages:
+
+  - name: Bad PATCH Debug wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Debug: "1"
+    response:
+      status_code: 400
+     
+  - name: Bad PATCH KV_url wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        KV_url: 1234
+    response:
+      status_code: 400
+     
+  - name: Bad PATCH Nosm wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Nosm: "1"
+    response:
+      status_code: 400
+
+  - name: Bad PATCH Port wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Port: "1234"
+    response:
+      status_code: 400
+
+  - name: Bad PATCH SM_retries wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        SM_retries: "12"
+    response:
+      status_code: 400
+ 
+  - name: Bad PATCH SM_timeout wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        SM_timeout: "20"
+    response:
+      status_code: 400
+
+  - name: Bad PATCH SM_url wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        SM_url: 1234
+    response:
+      status_code: 400
+ 
+  - name: Bad PATCH Scn_in_url wrong data type/not allowed
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Scn_in_url: 1234
+    response:
+      status_code: 400
+ 
+  - name: Bad PATCH Telemetry_host wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Telemetry_host: 1234
+    response:
+      status_code: 400
+
+  - name: Bad PATCH Use_telemetry wrong data type
+    request:
+      url: "{hmnfd_url}/v1/params"
+      verify: False
+      method: PATCH
+      json:
+        Use_telemetry: "1"
+    response:
+      status_code: 400
+     
+

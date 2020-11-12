@@ -1,0 +1,3 @@
+== About this Document
+This document contains reference information for the HMS Notification Fanout Daemon (NFD).
+

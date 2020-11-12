@@ -1,0 +1,28 @@
+# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for building HMS fake State Manager for testing.
+# Author: mpkelly
+# Date: 12-February 2019
+
+# Base image contains everything needed for Go building, just build.
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS builder
+
+COPY Test/fake-hsm/fake-hsm.go ${GOPATH}/src/fake-hsm/
+
+RUN set -ex && go build -v -i -o /usr/local/bin/fake-hsm fake-hsm
+
+### Final Stage ###
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+STOPSIGNAL SIGTERM
+
+ENV PORT=27999
+
+# Copy the final binary.
+
+COPY --from=builder /usr/local/bin/fake-hsm /usr/local/bin
+
+# Run the fake State Mgr daemon
+
+CMD ["sh", "-c", "fake-hsm"]

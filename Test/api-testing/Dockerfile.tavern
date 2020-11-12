@@ -1,0 +1,38 @@
+# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for running API/functional TAVERN-based tests.
+# Author: mpkelly
+# Date: 12-February 2019
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+
+# Configure pip to use the DST PIP Mirror
+ENV PIP_TRUSTED_HOST dst.us.cray.com
+ENV PIP_INDEX_URL http://$PIP_TRUSTED_HOST/dstpiprepo/simple/
+
+# Make sure python, pip, and tavern are installed.  Also 'curl' for testing.
+
+# NOTE: Do NOT install pytest!  Installing pytest goofs stuff up so that 
+# Tavern won't find the specified .yaml files no matter how loudly you tell 
+# it where they are.
+
+RUN set -ex \
+    && apk update \
+    && apk add --no-cache \
+        python3 \
+        py3-pip \
+        curl \
+    && pip3 install --upgrade pip \
+    && pip3 install tavern==0.34.0
+
+COPY Test/api-testing/*.yaml /usr/local/bin/
+COPY Test/api-testing/*.sh /usr/local/bin/
+
+# Run the tests.  We'll do it this way rather then CMD, so that the
+# unit test script can just do a 'docker build' rather than building
+# and then running.  This way the build runs the Tavern tests and the
+# unit test script can look at the result of the test run.  Running
+# the container won't do that for us.
+
+RUN runTavernTests.sh

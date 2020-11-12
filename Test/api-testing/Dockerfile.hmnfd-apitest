@@ -1,0 +1,61 @@
+# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for building HMS hmnfd (HMI Notification Fanout Daemon)
+# for integration/API testing.
+# Author: mpkelly
+# Date: 12-February 2019
+
+# Integration TEST stage
+
+# Base image contains everything needed for Go building, just build.
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS builder
+
+RUN set -ex \
+    && apk update \
+    && apk add build-base
+
+# Copy all the necessary files to the image.
+COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/cmd
+COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/vendor
+
+# Base image contains everything needed for Go building, just build.
+
+RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd stash.us.cray.com/HMS/hms-hmi-nfd/cmd/hmi-nfd
+
+### Final Stage ###
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+STOPSIGNAL SIGTERM
+
+# Copy the final binary.  
+
+COPY --from=builder /usr/local/bin/hmnfd /usr/local/bin
+
+# Run the daemon
+
+ENV DEBUG=3
+ENV SM_URL="http://fakesm:27999/hsm/v1"
+ENV INBOUND_SCN_URL=""
+ENV SM_RETRIES=3
+ENV SM_TIMEOUT=10
+ENV PORT=28600
+ENV USE_TELEMETRY=""
+ENV TELEMETRY_HOST=""
+ENV NOSM=""
+
+# Force fanout sync mode to insure there is no indeterminate ordering of 
+# SCN reception
+
+ENV HMNFD_FANOUT_SYNC=1
+
+# Use this for in-memory datastore (no good for API testing)
+#ENV KV_URL="mem:"
+
+# Use this for the docker-compose usage of ETCD.  NOTE: not sure why
+# this isn't 'etcd-server' rather than 'etcd'??
+
+ENV KV_URL="http://etcd:2379"
+#ENV KV_URL="http://etcd-server:2379"
+
+CMD ["sh", "-c", "hmnfd --debug=$DEBUG $NOSM --sm_url=$SM_URL --sm_retries=$SM_RETRIES --sm_timeout=$SM_TIMEOUT -port=$PORT --kv_url=$KV_URL --scn_in_url=$INBOUND_SCN_URL $USE_TELEMETRY --telemetry_host=$TELEMETRY_HOST"]

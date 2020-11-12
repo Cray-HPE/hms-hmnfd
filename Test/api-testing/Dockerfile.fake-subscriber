@@ -1,0 +1,25 @@
+# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for building HMS fake node/SCN subscriber for testing.
+# Author: mpkelly
+# Date: 12-February 2019
+
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS builder
+
+COPY Test/fake-subscriber/fake-subscriber.go ${GOPATH}/src/fake-subscriber/
+
+RUN set -ex && go build -v -i -o /usr/local/bin/fake-subscriber fake-subscriber
+
+### Final Stage ###
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+STOPSIGNAL SIGTERM
+
+# Copy the final binary.  
+
+COPY --from=builder /usr/local/bin/fake-subscriber /usr/local/bin
+
+# Run the fake-subscriber daemon.  Env vars come from the .yaml file.
+
+CMD ["sh", "-c", "fake-subscriber"]

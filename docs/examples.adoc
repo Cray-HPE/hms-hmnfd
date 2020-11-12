@@ -1,0 +1,138 @@
+== Examples
+=== Subscribe to State Change Notifications on a set of nodes
+
+Compute or system service nodes may want to be notified when other
+nodes (or other component types) in the system change state.  For
+example, in a booted system, a node may be in tight communication with
+other nodes in the system and need to be notified when any of those
+nodes go away, since there is no way to detect this case directly.
+
+To receive notifications, a node must have an http or https based 
+REST API endpoint service running.  This is where the State Change 
+Notifications will be sent to when they occur.  This service should be
+as simple and lightweight as possible.  
+
+Once this is running, the node can send a subscription request to the HMS 
+Notification Fanout Daemon via a PATCH operation.  The URL of the fanout 
+service is described in the Swagger YAML file.  The payload of the PATCH
+is as follows:
+
+[source]
+.State Change Notification Subscription request payload 
+
+----
+       {
+           "Subscriber":"x100c0s0b0n0",
+           "Subscriptions":
+           [
+               {
+                   "Components":
+                   [ 
+                       "x0c1s2b0n3","x0c2s3b0n4",x0c2s3b0n5" 
+                   ],
+                   "States":
+                   [
+                       "Standby","Halt"
+                   ]
+               }
+            ]
+           "Url":"http://x100c0s0b0n0.site.com:7999/scn"
+       }
+
+----
+
+Once this is done successfully, any time the listed components change state
+to "Standby" or "Halt" a state change notification will get sent to node
+x100c0s0b0n0 to the service responding to the url "http://x100c0s0b0n0.site.com:7999/scn".
+
+=== Receive State Change Notification
+
+As shown in the example above, a node can subscribe for State Change 
+Notifications.  Once they happen, the subscribing nodes will receive these
+notifications as they occur, using the URL specified at subscription time.
+These will be POST operations.
+
+The notification message payload is as follows:
+
+[source]
+.State Change Notification Payload
+
+----
+    {
+        "Components":
+        [
+            "x0c2s3b0n4",x0c2s3b0n5"
+        ],
+        "NewState": "Standby"
+    }
+----
+
+=== Unsubscribe A State Change Notification
+
+There may be times when a node wants to stop receiving notifications.
+To do so, the node must un-subscribe a given subscription.
+
+The same URL is used for unsubscribing as for subscribing.  Unsubscribing
+is a DELETE operation, and the data payload is smaller -- all that is needed
+are the sender ID and the notification URL, as seen in the following format:
+
+[source]
+.Unsubscribe Payload
+
+----
+    {
+        "Subscriber":"x100c0s0b0n0",
+        "Url":"http://x100c0s0b0n0.site.com:7999/scn"
+    }
+----
+
+=== View Current Subscriptions
+
+For debugging purposes it may be desired to look at the current list of
+subscriptions.  This is typically only done by an admin.  RBAC will be
+employed to prevent nodes from doing this.
+
+Following is an example CURL command and its output:
+
+[source,bash]
+.Get current subscription information
+
+  curl -k https://sms-1/apis/hmsnfd/v1/subscriptions | python2 -m json.tool
+
+
+.Output
+
+  {
+      "SubscriberList":
+      [
+          {
+              "Subscriber":"x0c1s2b0n3",
+              "Subscriptions":
+              [
+                  {
+                      "Components":
+                      [
+                           "x0c1s2b0n3","x0c2s3b0n4",x0c2s3b0n5" 
+                      ],
+                      "States":
+                      [
+                          "Standby","Halt"
+                      ]
+                  },
+                  {
+                      "Components":
+                      [
+                           "x1c1s2b0n3","x1c2s3b0n4",x1c2s3b0n5" 
+                      ],
+                      "States":
+                      [
+                          "Ready"
+                      ]
+                  },
+               ],
+               "Url":"http://x100c0s0b0n0.site.com:7999/scn"
+           },
+           ...
+      ]
+  }
+
