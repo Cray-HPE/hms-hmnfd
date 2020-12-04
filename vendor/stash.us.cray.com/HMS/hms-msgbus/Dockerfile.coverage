@@ -1,0 +1,9 @@
+# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for running testing coverage on msgbus HMS code.
+
+FROM cray/hms-msgbus-build-base
+
+# Run coverage.
+RUN set -ex \
+    && go test -cover -v stash.us.cray.com/HMS/hms-msgbus/...
