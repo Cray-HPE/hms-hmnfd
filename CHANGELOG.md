@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 These are changes to charts in support of:
 
 
+## [1.6.1] - 2021-01-20
+
+### Added
+
+- Added User-Agent headers to all outbound HTTP requests.
+
 ## [1.6.0] - 2021-01-14
 
 ### Changed
