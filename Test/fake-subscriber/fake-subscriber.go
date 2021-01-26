@@ -45,6 +45,7 @@ type Scn struct {
     SubRole string        `json:"SubRole,omitempty"`
     SoftwareStatus string `json:"SoftwareStatus,omitempty"`
     State string          `json:"State,omitempty"`
+    Timestamp string      `json:"Timestamp,omitempty"`
 }
 
 type ScnSubscribe struct {
@@ -104,20 +105,23 @@ func (p *httpStuff) subs_rcv(w http.ResponseWriter, r *http.Request) {
 
     log.Printf("##########################################################\n")
     log.Printf("Received an SCN:\n")
+    if (jdata.Timestamp != "") {
+        log.Printf("    Timestamp: '%s'\n", jdata.Timestamp)
+    }
     if (jdata.State != "") {
-        log.Printf("    State:    '%s'\n", jdata.State)
+        log.Printf("    State:     '%s'\n", jdata.State)
     }
     if (jdata.SoftwareStatus != "") {
-        log.Printf("    SWStatus: '%s'\n", jdata.SoftwareStatus)
+        log.Printf("    SWStatus:  '%s'\n", jdata.SoftwareStatus)
     }
     if (jdata.Role != "") {
-        log.Printf("    Role:     '%s'\n", jdata.Role)
+        log.Printf("    Role:      '%s'\n", jdata.Role)
     }
     if (jdata.SubRole != "") {
-        log.Printf("    SubRole:  '%s'\n", jdata.SubRole)
+        log.Printf("    SubRole:   '%s'\n", jdata.SubRole)
     }
     if (jdata.Enabled != nil) {
-        log.Printf("    Enabled:  '%t'\n", *jdata.Enabled)
+        log.Printf("    Enabled:   '%t'\n", *jdata.Enabled)
     }
 
     for i := 0; i < len(jdata.Components); i++ {
