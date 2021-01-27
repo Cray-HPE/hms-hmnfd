@@ -43,12 +43,13 @@ type ScnSubscribe struct {
 
 
 
-type httpStuff struct {
-    stuff string
+func stateComps(w http.ResponseWriter, r *http.Request) {
+	//Return nothing useful.  This is for pruneDeadwood().
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("{}"))
 }
 
-
-func (p *httpStuff) subs_rcv(w http.ResponseWriter, r *http.Request) {
+func subs_rcv(w http.ResponseWriter, r *http.Request) {
     if (r.Method != "POST") {
         log.Printf("ERROR: request is not a POST.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -96,6 +97,7 @@ func (p *httpStuff) subs_rcv(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
 }
 
+
 func main() {
     var envstr string
     port := "27999"
@@ -105,10 +107,9 @@ func main() {
         port = envstr
     }
 
-    urlep := "/hsm/v1/Subscriptions/SCN"
-    hstuff := new(httpStuff)
-    http.HandleFunc(urlep,hstuff.subs_rcv)
-    log.Printf("==> Listening on endpoint '%s', port '%s'\n",urlep,port)
+    http.HandleFunc("/hsm/v1/Subscriptions/SCN",subs_rcv)
+    http.HandleFunc("/hsm/v1/State/Components",stateComps)
+    log.Printf("==> Listening on port '%s'",port)
 
     err := http.ListenAndServe(":"+port,nil)
     if (err != nil) {

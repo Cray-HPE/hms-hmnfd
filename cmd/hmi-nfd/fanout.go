@@ -447,6 +447,10 @@ func sendSCNToSubscriber(sd Scn, subscriber string, url string) {
 func pruneDeadWood() {
     var jdata hsmStateArray
 
+    if (app_params.Nosm != 0) {
+        return
+    }
+
     badMap := make(map[string]bool)
     smURL := app_params.SM_url + URL_DELIM + SM_STATEDATA
 
@@ -457,7 +461,7 @@ func pruneDeadWood() {
         if (err != nil) {
             log.Printf("ERROR creating HTTP POST request to url '%s': %v",
                 smURL,err)
-            time.Sleep(2)
+            time.Sleep(2 * time.Second)
             continue
         }
 
@@ -474,21 +478,21 @@ func pruneDeadWood() {
         rsp,rerr := htrans.client.Do(req)
         if (rerr != nil) {
             log.Printf("ERROR sending GET to HSM for node states: %v",rerr)
-            time.Sleep(2)
+            time.Sleep(2 * time.Second)
             continue
         }
 
         body,berr := ioutil.ReadAll(rsp.Body)
         if (berr != nil) {
             log.Printf("ERROR reading HSM response for node states: %v",berr)
-            time.Sleep(2)
+            time.Sleep(2 * time.Second)
             continue
         }
 
         err = json.Unmarshal(body,&jdata)
         if (err != nil) {
             log.Printf("ERROR unmarshalling HSM response for node states: %v",err)
-            time.Sleep(2)
+            time.Sleep(2 * time.Second)
             continue
         }
 

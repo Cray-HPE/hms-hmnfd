@@ -1,4 +1,25 @@
-// Copyright (c) 2019,2020 Cray Inc. All Rights Reserved.
+// MIT License
+// 
+// (C) Copyright [2019-2021] Hewlett Packard Enterprise Development LP
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
 
 package main
 
@@ -65,6 +86,7 @@ type Scn struct {
     SubRole string        `json:"SubRole,omitempty"`
     SoftwareStatus string `json:"SoftwareStatus,omitempty"`
     State string          `json:"State,omitempty"`
+    Timestamp string      `json:"Timestamp,omitempty"`
 }
 
 // SCN subscription.  Used for hmnfd->HSM subscriptions and also node->hmnfd 
@@ -203,7 +225,7 @@ func intersect(subarr []string, hsmarr []string) []string {
             }
         }
     } else {
-		for ix := 0; ix < len(subarr); ix ++ {
+        for ix := 0; ix < len(subarr); ix ++ {
             dmap[subarr[ix]] = true
         }
 
@@ -1141,27 +1163,29 @@ func (p *httpStuff) scnHandler(w http.ResponseWriter, r *http.Request) {
     //Is this the first SCN on an empty cache?
 
     if ((len(jdCache.Components) == 0) || (jdCount == 0)) {
-		jdcDeepCopy(&jdata)
-		jdCount ++
-		jdcMutex.Unlock()
-		return
+        jdcDeepCopy(&jdata)
+        jdCount ++
+        jdcMutex.Unlock()
+        return
     }
 
     //Check the SCN for equality to the cache
 
     if (scnCacheEqual(&jdata)) {
-		jdCache.Components = append(jdCache.Components,jdata.Components...)
-		jdCount ++
+        jdCache.Components = append(jdCache.Components,jdata.Components...)
+        jdCount ++
 
         if (jdCount >= app_params.Scn_max_cache) {
+            jdCache.Timestamp = time.Now().Format(time.RFC3339Nano)
             scnQ <- jdCache
             jdCache = Scn{}
             jdCount = 0
         }
     } else {
         if (len(jdCache.Components) > 0) {
+            jdCache.Timestamp = time.Now().Format(time.RFC3339Nano)
             scnQ <- jdCache
-			jdcDeepCopy(&jdata)
+            jdcDeepCopy(&jdata)
             jdCount = 1
         }
     }
@@ -1215,9 +1239,10 @@ func checkSCNCache() {
 
 		jdcMutex.Lock()
 		if (len(jdCache.Components) > 0) {
-            scnQ <- jdCache
-            jdCache = Scn{}
-            jdCount = 0
+			jdCache.Timestamp = time.Now().Format(time.RFC3339Nano)
+			scnQ <- jdCache
+			jdCache = Scn{}
+			jdCount = 0
 		}
 		jdcMutex.Unlock()
 	}
@@ -1275,7 +1300,7 @@ func doScn(jdata Scn) {
     kvlist,kverr := kvHandle.GetRange(SUBSCRIBER_KEYRANGE_START,SUBSCRIBER_KEYRANGE_END)
     if (kverr != nil) {
         log.Printf("ERROR: Problem retrieving key list for SCN %s: %v",
-			jdata_lc.State,kverr)
+            jdata_lc.State,kverr)
         return
     }
 
@@ -1316,6 +1341,7 @@ func doScn(jdata Scn) {
             sendData.SubRole = jdata.SubRole
             sendData.SoftwareStatus = jdata.SoftwareStatus
             sendData.State = jdata.State
+            sendData.Timestamp = jdata.Timestamp
             //Skip components for now, need to do an intersection first.
 
             umerr := json.Unmarshal([]byte(sub.Value),&nsdata)
