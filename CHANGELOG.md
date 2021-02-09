@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.5.3] - 2021-02-08
+
+- Update Copyright/License info
+
 ## [1.5.2] - 2020-10-20
 
 - CASMHMS-4105 - Updated base Golang Alpine image to resolve libcrypto vulnerability.
