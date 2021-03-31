@@ -70,7 +70,7 @@
 #       schooler   07/10/2019   add AuthN support for API calls
 #       schooler   07/10/2019   update smoke test library location
 #                               from hms-services to hms-common
-#       schooler   08/19/2019   add initial check_pod_status test
+#       schooler   08/19/2019   add check_pod_status test
 #       schooler   09/06/2019   add test case documentation
 #       schooler   09/09/2019   update smoke test library location
 #                               from hms-common to hms-test
