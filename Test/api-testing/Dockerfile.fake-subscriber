@@ -1,7 +1,6 @@
-# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
 # MIT License
 #
-# (C) Copyright [2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,7 +24,7 @@
 # Author: mpkelly
 # Date: 12-February 2019
 
-FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS builder
+FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.14-alpine3.12 AS builder
 
 COPY Test/fake-subscriber/fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
@@ -33,7 +32,7 @@ RUN set -ex && go build -v -i -o /usr/local/bin/fake-subscriber fake-subscriber
 
 ### Final Stage ###
 
-FROM dtr.dev.cray.com/baseos/alpine:3.12
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12
 LABEL maintainer="Cray, Inc."
 STOPSIGNAL SIGTERM
 

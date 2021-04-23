@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+
 # MIT License
 #
-# (C) Copyright [2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -41,8 +42,9 @@
 # The sequence of events for this testing is:
 #
 # 1. hmnfd, fake State Manager, and fake SCN subscriber containers are built 
-#    from current source.  We don't pull them from DTR, since we want to test 
-#    everything that was just checked in; using DTR gets the previous versions.
+#    from current source.  We don't pull them from Artifactory, since we want
+#    to test everything that was just checked in; using Artifactory gets the
+#    previous versions.
 #
 # 2. A container set is built using docker-compose.  It will build the set
 #    containing the hmnfd, fake State Manager, fake SCN subscriber containers
@@ -54,7 +56,6 @@
 #
 # 4. The Tavern test container is built, which runs the Tavern tests and gives
 #    us a pass/fail result, which is returned to Jenkins.
-
 
 DOCKERFILEZ="Dockerfile.fake-hsm Dockerfile.fake-subscriber Dockerfile.hmnfd-apitest docker-compose-hmnfdapitest.yaml"
 BASEPORT=25000
@@ -180,7 +181,6 @@ container_network=`docker network ls --filter "name=${HSUFFIX}_ttest" --format "
 echo "Bridge network name: ${container_network}"
 docker network inspect ${container_network}
 
-
 # Everything is ready.  Now just build the TAVERN test container, which
 # will run the tests.  We'll specify the hosts/ips of the bridge network
 # services running in the cluster in the building/running our TAVERN test 
@@ -221,13 +221,15 @@ echo " "
 
 echo "Addhosts: .${addhosts}."
 echo "NW: .${container_network}."
-echo "Running: docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern ."
+echo "Running: DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern ."
 
-docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern .
+DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern .
 
 test_rslt=$?
 
 # Shut down and clean up
+
+rm -f Test/api-testing/common.yaml
 
 echo " "
 echo "=============== > Shutting down container set..."
@@ -251,4 +253,3 @@ fi
 echo "================================================="
 
 exit ${test_rslt}
-
