@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.7.3] - 2021-04-16
+
+### Changed
+
+- Updated Dockerfiles to pull base images from Artifactory instead of DTR.
+
 ## [1.7.2] - 2021-03-03
 
 ### Changed
@@ -20,7 +26,6 @@ These are changes to charts in support of:
 ### Added
 
 - Update Copyright/license and re-vendor go packages.
-
 
 ## [1.7.0] - 2021-02-01
 
@@ -45,7 +50,6 @@ These are changes to charts in support of:
 ### Changed
 
 - Updated license file.
-
 
 ## [1.5.2] - 2020-10-20
 
