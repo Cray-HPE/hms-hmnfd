@@ -73,7 +73,7 @@ services:
       - ttest
 
   etcd:
-    image: dtr.dev.cray.com/coreos/etcd:v3.4.7
+    image: arti.dev.cray.com/third-party-docker-stable-local/coreos/etcd:v3.4.7
     hostname: etcd-server_${HSUFFIX}
     container_name: etcd_server_${HSUFFIX}
     ports:
