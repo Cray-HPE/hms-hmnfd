@@ -25,6 +25,8 @@ cray-service:
                   - istio-ingressgateway
                   - istio-ingressgateway-hmn
             topologyKey: "kubernetes.io/hostname"
+            namespaces:
+              - istio-system
   etcdCluster:
     enabled: true
     resources:
