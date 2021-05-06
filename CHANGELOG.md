@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.7.4] - 2021-05-06
+
+### Changed
+
+- Added istio pod anti-affinity.
+
 ## [1.7.3] - 2021-04-16
 
 ### Changed
