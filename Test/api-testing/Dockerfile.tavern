@@ -24,8 +24,8 @@
 # Author: mpkelly
 # Date: 12-February 2019
 
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12
-LABEL maintainer="Cray, Inc."
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
+LABEL maintainer="Hewlett Packard Enterprise"
 
 # Make sure python, pip, and tavern are installed.  Also 'curl' for testing.
 

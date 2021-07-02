@@ -1,6 +1,6 @@
 module stash.us.cray.com/HMS/hms-msgbus
 
-go 1.12
+go 1.16
 
 require (
 	github.com/Shopify/sarama v1.22.1
