@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.8.1] - 2021-07-01
+
+### Security
+
+- CASMHMS-4898 - Updated base container images for security updates.
+
 ## [1.8.0] - 2021-06-18
 
 ### Changed
+
 - Bump minor version for CSM 1.1 release branch
 
 ## [1.7.4] - 2021-05-04
