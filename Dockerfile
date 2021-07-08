@@ -23,7 +23,7 @@
 # Dockerfile for building HMS NFD (Node Fanout Daemon).
 
 # Build base just has the packages installed we need.
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.14-alpine3.12 AS build-base
+FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
 
 RUN set -ex \
     && apk update \
@@ -31,6 +31,8 @@ RUN set -ex \
 
 # Base copies in the files we need to test/build.
 FROM build-base AS base
+
+RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
 COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/cmd
@@ -58,8 +60,8 @@ RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd stash.us.cray.com/HMS/hms-
 
 
 ### Final Stage ###
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12
-LABEL maintainer="Cray, Inc."
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
+LABEL maintainer="Hewlett Packard Enterprise"
 EXPOSE 28600
 STOPSIGNAL SIGTERM
 
