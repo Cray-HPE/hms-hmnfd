@@ -29,7 +29,7 @@ CHART_PATH ?= kubernetes
 CHART_VERSION ?= local
 
 image:
-    docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+    docker build --pull ${DOCKER_ARGS} --tag '${NAME}\:${VERSION}' .
 
 test:
 	./runUnitTest.sh
