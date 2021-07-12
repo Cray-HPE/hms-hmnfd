@@ -20,8 +20,7 @@
 #
 # (MIT License)
 
-NAME ?=cray-hms-hmnfd
-export VERSION ?= $(shell cat .version)
+VERSION ?= $(shell cat .version)
 DOCKER_IMAGE ?= ${NAME}:${VERSION}
 
 # HELM CHART
@@ -30,7 +29,7 @@ CHART_NAME ?= cray-hms-hmnfd
 CHART_VERSION ?= local
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+	docker build --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
 
 test:
 	./runUnitTest.sh
