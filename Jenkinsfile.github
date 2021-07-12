@@ -25,6 +25,12 @@ pipeline {
             }
         }
 
+        stage("Chart") {
+            steps {
+                sh "make chart"
+            }
+        }
+
         stage("Test") {
             steps {
                 sh "make test"
