@@ -26,6 +26,7 @@ DOCKER_IMAGE ?= ${NAME}:${VERSION}
 
 # HELM CHART
 CHART_PATH ?= kubernetes
+CHART_NAME ?= cray-hms-hmnfd
 CHART_VERSION ?= local
 
 image:
