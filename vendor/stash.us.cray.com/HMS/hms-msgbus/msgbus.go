@@ -94,6 +94,7 @@ type MsgBusConfig struct {
 	Direction      BusDir
 	ConnectRetries int
 	Topic          string
+	GroupId        string
 }
 
 // Kafka bus descriptor
@@ -118,6 +119,7 @@ type MsgBusReader_Kafka struct {
 	kafkaConfig   *cluster.Config
 	kafkaConsumer *cluster.Consumer
 	kafkaTopic    string
+	kafkaGroupId  string
 	cbfunc        CBFunc
 	readQ         chan string
 
@@ -557,8 +559,10 @@ func connect_kafka_r(kbus *MsgBusReader_Kafka) error {
 	brokers := []string{kbus.kafkaHost + ":" + strconv.Itoa(kbus.kafkaPort)}
 	topic := []string{kbus.kafkaTopic}
 
-	rnum := time.Now().Nanosecond()
-	gid := fmt.Sprintf("%d", rnum)
+	if kbus.kafkaGroupId == "" {
+		rnum := time.Now().Nanosecond()
+		kbus.kafkaGroupId = fmt.Sprintf("%d", rnum)
+	}
 
 	for ntry = 0; ntry < kbus.connectRetries; ntry++ {
 		//NOTE: could just use cluster.NewConsumer(), but exposing the client
@@ -575,7 +579,7 @@ func connect_kafka_r(kbus *MsgBusReader_Kafka) error {
 			continue
 		}
 		if !__testmode {
-			consumer, err = cluster.NewConsumerFromClient(client, gid, topic)
+			consumer, err = cluster.NewConsumerFromClient(client, kbus.kafkaGroupId, topic)
 		} else {
 			err = nil
 		}
@@ -634,6 +638,7 @@ func ConnectReader_Kafka(cfg MsgBusConfig) (*MsgBusReader_Kafka, error) {
 		kafkaHost:      cfg.Host,
 		kafkaPort:      cfg.Port,
 		kafkaTopic:     cfg.Topic,
+		kafkaGroupId:   cfg.GroupId,
 		connectRetries: cfg.ConnectRetries,
 	}
 
