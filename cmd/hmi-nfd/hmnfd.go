@@ -35,6 +35,16 @@ import (
 	"strings"
 	"sync"
 	"time"
+	//"context"
+	//"path/filepath"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	//"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
+
+	//"github.com/googleapis/gnostic/OpenAPIv2"
+	//"k8s.io/api/auditregistration/v1alpha1"
 
 	"stash.us.cray.com/HMS/hms-base"
 	"stash.us.cray.com/HMS/hms-hmetcd"
@@ -393,6 +403,76 @@ func parseEnvVars() {
 	__env_parse_int("HMNFD_FANOUT_SYNC", &fanoutSyncMode)
 }
 
+func do_kub() {
+	fname := "do_kub()"
+	config,err := rest.InClusterConfig()
+	if (err != nil) {
+		log.Printf("%s: clusterconfig failed: %v",fname,err)
+		return
+	}
+
+/*	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config",)
+
+    // Initialize kubernetes-client
+    config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+    if err != nil {
+        fmt.Printf("Error building kubeconfig: %v\n", err)
+        os.Exit(1)
+    }
+*/
+
+	kubeClient,cerr := kubernetes.NewForConfig(config)
+	if (cerr != nil) {
+		log.Printf("%s: NewForConfig failed: %v",fname,cerr)
+		return
+	}
+
+/*	ctx,cancel := context.New(context.Background())
+	pods,perr := clientset.CoreV1.Pods("services").List(ctx,metav1.ListOptions{})
+	if (perr != nil) {
+		log.Printf("%s: error getting pods: %v",fname,perr)
+		return
+	}
+*/
+	podList, _ := kubeClient.CoreV1().Pods("services").List(metav1.ListOptions{})
+
+	log.Printf("Fetched info for %d pods.",len(podList.Items))
+	for _,pod := range(podList.Items) {
+		log.Printf("    podname: '%s'",pod.Name)
+		log.Printf("    hostIP:  '%s'",pod.Status.HostIP)
+		log.Printf("    podIP:   '%s'",pod.Status.PodIP)
+//PodPhase and/or Conditions -- make sure the pods are running!
+		log.Printf("    podIPs:")
+		for _,ip := range(pod.Status.PodIPs) {
+			log.Printf("              '%s'",ip.IP)
+		}
+	}
+
+/* example output:
+     podname: 'cray-hbtd-dff5969b5-24gh6'
+     hostIP:  '10.252.1.8'
+     podIP:   '10.36.0.40'
+     podIPs:
+               '10.36.0.40'
+     podname: 'cray-hbtd-dff5969b5-gpg69'
+     hostIP:  '10.252.1.7'
+     podIP:   '10.47.0.50'
+     podIPs:
+               '10.47.0.50'
+     podname: 'cray-hbtd-dff5969b5-p49dl'
+     hostIP:  '10.252.1.9'
+     podIP:   '10.44.0.56'
+     podIPs:
+               '10.44.0.56'
+
+Thus, 'podname' is what to look for, and 'podIP' is the IP to use.
+Q: what about a secondary container like a memcached server?
+A: Gotta find it with this interface somehow.  And it's IP will be the same
+   as the service container but will use a different port.
+*/
+
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Parse a JSON string containing parameters and assign the parameters based
 // on the JSON values.  This is used by the /params API.
@@ -412,6 +492,10 @@ func parseParamJson(param_json []byte, whence int) error {
 	unstr := "xxx"
 	bad := 0
 	tpd = app_params
+
+if (whence == PARAM_PATCH) {
+ do_kub()
+}
 
 	//Set default bad values so we know what the unmarshaller actually saw
 	jdata.Debug = unint

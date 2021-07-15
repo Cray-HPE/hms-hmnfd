@@ -58,6 +58,15 @@ cray-service:
         requests:
           cpu: 64m
           memory: 512Mi
+
+    memcached:
+      name: "memcached"
+      image: docker.io/bitnami/memcached
+      ports:
+        - containerPort: 31211
+      command: /opt/bitnami/scripts/memcached/run.sh --port 31211
+
+
   podAnnotations:
     traffic.sidecar.istio.io/excludeOutboundPorts: 8082,9092,2181,2379,2380
   ingress:
