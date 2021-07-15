@@ -65,7 +65,8 @@ cray-service:
         repository: docker.io/bitnami/memcached
       ports:
         - containerPort: 31211
-      command: /opt/bitnami/scripts/memcached/run.sh --port 31211
+      command: ["/bin/sh", "-c"]
+      args: ["/opt/bitnami/scripts/memcached/run.sh --port 31211"]
 
 
   podAnnotations:
