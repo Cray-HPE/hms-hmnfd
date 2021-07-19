@@ -20,6 +20,7 @@
 #
 # (MIT License)
 
+NAME ?= cray-hmnfd
 VERSION ?= $(shell cat .version)
 DOCKER_IMAGE ?= ${NAME}:${VERSION}
 

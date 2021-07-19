@@ -11,11 +11,12 @@ pipeline {
     }
 
     environment {
-        NAME = "cray-hms-hmnfd"
+        NAME = "cray-hmnfd"
         DESCRIPTION = "Cray State Change Notification Fanout Service"
         IS_STABLE = getBuildIsStable()
         VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
-        DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION, version: env.VERSION)
+        DOCKER_ARGS = getDockerBuildArgs(name: "hms-hmnfd", description: env.DESCRIPTION, version: env.VERSION)
+        CHART_NAME = "cray-hms-hmnfd"
         CHART_VERSION = getChartVersion(version: env.VERSION)
     }
 
@@ -48,7 +49,7 @@ pipeline {
             steps {
                 script {
                     publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE)
-                    publishCsmHelmCharts(component: env.NAME, chartsPath: "${WORKSPACE}/kubernetes/.packaged", isStable: env.IS_STABLE)
+                    publishCsmHelmCharts(component: env.CHART_NAME, chartsPath: "${WORKSPACE}/kubernetes/.packaged", isStable: env.IS_STABLE)
                 }
             }
         }
