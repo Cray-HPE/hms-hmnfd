@@ -13,7 +13,7 @@ These are changes to charts in support of:
 
 ### Changed 
 
-- Added pipeline support for building in GH..
+- Add GH pipeline build support. 
 
 ## [1.9.1] - 2021-07-12
 
