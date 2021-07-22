@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.9.2] - 2021-07-22
+
+### Changed 
+
+- Add GH pipeline build support. 
+
 ## [1.9.1] - 2021-07-12
 
 ### Security
