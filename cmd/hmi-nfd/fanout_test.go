@@ -25,7 +25,7 @@ package main
 import(
     "testing"
     "time"
-    "stash.us.cray.com/HMS/hms-hmetcd"
+    "github.com/Cray-HPE/hms-hmetcd"
     "encoding/json"
 )
 
