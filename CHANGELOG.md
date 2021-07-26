@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.9.3] - 2021-07-26
+
+### Changed 
+
+- Phase 3 of Github migration.
+
 ## [1.9.2] - 2021-07-22
 
 ### Changed 
