@@ -36,9 +36,9 @@ import (
 	"sync"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-base"
-	"stash.us.cray.com/HMS/hms-hmetcd"
-	"stash.us.cray.com/HMS/hms-msgbus"
+	"github.com/Cray-HPE/hms-base"
+	"github.com/Cray-HPE/hms-hmetcd"
+	"github.com/Cray-HPE/hms-msgbus"
 )
 
 /////////////////////////////////////////////////////////////////////////////

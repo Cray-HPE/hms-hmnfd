@@ -33,7 +33,7 @@ import (
     "bytes"
     "strings"
     "io/ioutil"
-    "stash.us.cray.com/HMS/hms-base"
+    "github.com/Cray-HPE/hms-base"
 )
 
 // Used for subscription tracking to insure we don't send > 1
