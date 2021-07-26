@@ -35,8 +35,8 @@ import (
 	"testing"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-base"
-	"stash.us.cray.com/HMS/hms-hmetcd"
+	"github.com/Cray-HPE/hms-base"
+	"github.com/Cray-HPE/hms-hmetcd"
 )
 
 var gofuncsRunning = false
