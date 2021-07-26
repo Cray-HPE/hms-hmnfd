@@ -25,7 +25,7 @@ package main
 import (
 	"errors"
 	"log"
-	"stash.us.cray.com/HMS/hms-base"
+	"github.com/Cray-HPE/hms-base"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

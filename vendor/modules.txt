@@ -1,3 +1,12 @@
+# github.com/Cray-HPE/hms-base v1.15.0
+## explicit
+github.com/Cray-HPE/hms-base
+# github.com/Cray-HPE/hms-hmetcd v1.10.2
+## explicit
+github.com/Cray-HPE/hms-hmetcd
+# github.com/Cray-HPE/hms-msgbus v1.10.2
+## explicit
+github.com/Cray-HPE/hms-msgbus
 # github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798
 github.com/DataDog/zstd
 # github.com/Shopify/sarama v1.22.1
@@ -104,12 +113,3 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# stash.us.cray.com/HMS/hms-base v1.13.0
-## explicit
-stash.us.cray.com/HMS/hms-base
-# stash.us.cray.com/HMS/hms-hmetcd v1.10.0
-## explicit
-stash.us.cray.com/HMS/hms-hmetcd
-# stash.us.cray.com/HMS/hms-msgbus v1.10.0
-## explicit
-stash.us.cray.com/HMS/hms-msgbus

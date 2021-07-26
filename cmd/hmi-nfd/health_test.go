@@ -30,7 +30,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"stash.us.cray.com/HMS/hms-hmetcd"
+	"github.com/Cray-HPE/hms-hmetcd"
 )
 
 func TestLiveness(t *testing.T) {

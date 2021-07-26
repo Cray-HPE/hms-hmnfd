@@ -35,28 +35,28 @@ FROM build-base AS base
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/cmd
-COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 
 
 ### Unit Test Stage ###
 FROM base AS testing
 
 # Run unit tests...
-CMD ["sh", "-c", "set -ex && go test -v stash.us.cray.com/HMS/hms-hmi-nfd/cmd/hmi-nfd"]
+CMD ["sh", "-c", "set -ex && go test -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd"]
 
 
 ### Coverage Stage ###
 FROM base AS coverage
 
 # Run test coverage...
-CMD ["sh", "-c", "set -ex && go test -cover -v stash.us.cray.com/HMS/hms-hmi-nfd/cmd/hmi-nfd"]
+CMD ["sh", "-c", "set -ex && go test -cover -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd"]
 
 
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd stash.us.cray.com/HMS/hms-hmi-nfd/cmd/hmi-nfd
+RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
 
 
 ### Final Stage ###
