@@ -53,7 +53,7 @@ _hmnfd_'s RESTful API is a follows:
     PATCH changes to _hmnfd_ operating parameters
 ```
 
-See https://stash.us.cray.com/projects/HMS/repos/hms-hmi-nfd/browse/api/swagger.yaml for details on the hbtd RESTful API payloads and return values.
+See https://stash.us.cray.com/projects/HMS/repos/hms-hmi/browse/api/swagger.yaml for details on the hbtd RESTful API payloads and return values.
 
 ## hmnfd Command Line
 

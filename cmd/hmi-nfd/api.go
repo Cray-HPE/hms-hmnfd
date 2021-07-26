@@ -31,7 +31,7 @@ import (
     "io/ioutil"
     "strings"
     "math"
-    "stash.us.cray.com/HMS/hms-base"
+    "github.com/Cray-HPE/hms-base"
     "regexp"
     "reflect"
     "time"

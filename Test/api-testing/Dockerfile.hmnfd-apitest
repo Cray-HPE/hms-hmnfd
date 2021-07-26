@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS hmnfd (HMI Notification Fanout Daemon)
+# Dockerfile for building Cray-HPE hmnfd (HMI Notification Fanout Daemon)
 # for integration/API testing.
 # Author: mpkelly
 # Date: 12-February 2019
@@ -37,12 +37,12 @@ RUN set -ex \
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/cmd
-COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-hmi-nfd/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 
 # Base image contains everything needed for Go building, just build.
 
-RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd stash.us.cray.com/HMS/hms-hmi-nfd/cmd/hmi-nfd
+RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
 
 ### Final Stage ###
 
