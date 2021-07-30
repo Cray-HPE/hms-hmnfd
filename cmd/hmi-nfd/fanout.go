@@ -340,6 +340,13 @@ func makeSubscriptionEntry(complist []string, url string, key string) error {
     return nil
 }
 
+func pauseIf(startTime time.Time) {
+	dur := time.Since(startTime).Seconds()
+	if (int(dur) == 0) {
+		time.Sleep(time.Duration(app_params.Scn_backoff) * time.Second)
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Send an SCN to a subscriber.  This is called by the worker pool -- don't
 // call directly!  This function will attempt a few times, and if it 
@@ -382,10 +389,12 @@ func sendSCNToSubscriber(sd Scn, subscriber string, url string) {
    //TODO: this connection should be kept open, not sent each time if we
    //have to use HTTPS, which has expensive overhead with each new connection.
 
-    for retry = 1; retry <= SCN_SEND_RETRIES; retry++ {
+    for retry = 1; retry <= app_params.Scn_retries; retry++ {
+        start := time.Now()
         req,err := http.NewRequest("POST",url,bytes.NewBuffer(ba))
         if (err != nil) {
             log.Println("ERROR creating HTTP POST request to url:",url,":",err)
+            pauseIf(start)
             continue
         }
         req.Header.Set("Content-Type","application/json")
@@ -407,6 +416,7 @@ func sendSCNToSubscriber(sd Scn, subscriber string, url string) {
 
             log.Printf("ERROR sending SCN (attempt #%d), to '%s': %s",
                     retry,url,err.Error())
+            pauseIf(start)
             continue
         }
 
@@ -423,9 +433,10 @@ func sendSCNToSubscriber(sd Scn, subscriber string, url string) {
             log.Printf("ERROR response sending SCN (attempt #%d), to '%s', status code %d:",
                 retry,url,rsp.StatusCode)
         }
+        pauseIf(start)
     }
 
-    if (retry >= 4) {
+    if (retry > app_params.Scn_retries) {
         log.Printf("Maximum retries exhausted, dropping subscription for '%s'/'%s'\n",
             subscriber,url)
         //Prune this subscriber
