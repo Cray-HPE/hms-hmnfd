@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.9.4] - 2021-07-30
+
+### Changed 
+
+- Added 'smart delays' between SCN send retries, and made the retry backoff and number of retries changeable on the fly.
+
 ## [1.9.3] - 2021-07-26
 
 ### Changed 
