@@ -71,7 +71,9 @@ type opParams struct {
 	Port            int    `json:"Port"`
 	Scn_in_url      string `json:"Scn_in_url"`
 	Scn_max_cache   int    `json:"Scn_max_cache"`
-	Scn_cache_delay int   `json:"Scn_cache_delay"`
+	Scn_cache_delay int    `json:"Scn_cache_delay"`
+	Scn_retries     int    `json:"Scn_retries"`
+	Scn_backoff     int    `json:"Scn_backoff"`
 	SM_retries      int    `json:"SM_retries"`
 	SM_timeout      int    `json:"SM_timeout"`
 	SM_url          string `json:"SM_url"`
@@ -124,9 +126,10 @@ const (
 	SM_STATEDATA     = "State/Components"
 	SM_TIMEOUT       = 3
 	SM_RETRIES       = 3
-	SCN_SEND_RETRIES = 5
 	SCN_MAX_CACHE    = 100
 	SCN_CACHE_DELAY  = 5
+	SCN_BACKOFF      = 1
+	SCN_RETRIES      = 5
 )
 
 const (
@@ -158,6 +161,8 @@ var app_params = opParams{
 	Scn_in_url:      "",
 	Scn_max_cache:   SCN_MAX_CACHE,
 	Scn_cache_delay: SCN_CACHE_DELAY,
+	Scn_backoff:     SCN_BACKOFF,
+	Scn_retries:     SCN_RETRIES,
 	SM_retries:      SM_RETRIES,
 	SM_timeout:      SM_TIMEOUT,
 	SM_url:          "https://localhost:27999/hsm/v1",
@@ -199,6 +204,10 @@ func printHelp() {
 	fmt.Printf("  --nosm                  Don't contact State Manager (for debugging).\n")
 	fmt.Printf("  --port=num              HTTPS port to listen on. (Default: %d)\n",
 		URL_PORT)
+	fmt.Printf("  --scn_backoff=num       Seconds between SCN send retries (Default: %d)\n",
+		SCN_BACKOFF)
+	fmt.Printf("  --scn_retries=num       Number of times to retry sending SCNs (Default: %d)\n",
+		SCN_RETRIES)
 	fmt.Printf("  --sm_retries=num        Number of times to retry on State Manager error. (Default: %d)\n",
 		SM_RETRIES)
 	fmt.Printf("  --sm_timeout=num        Seconds to wait on State Manager accesses. (Default: %d)\n",
@@ -244,6 +253,8 @@ func parseCmdLine() {
 	scn_in_urlP := flag.String("scn_in_url", unstr, "URL where SCNs are received")
 	scn_max_cacheP := flag.Int("scn_max_cache", unint, "Max SCNs to cache")
 	scn_cache_delayP := flag.Int("scn_cache_delay", unint, "Max time to wait incaching SCNs")
+	scn_backoffP := flag.Int("scn_backoff", unint, "Time between SCN send retries")
+	scn_retriesP := flag.Int("scn_retries", unint, "Max number of SCN retries")
 	sm_retriesP := flag.Int("sm_retries", unint, "Number of times to retry SM on error")
 	sm_timeoutP := flag.Int("sm_timeout", unint, "Seconds to wait on SM response")
 	sm_urlP := flag.String("sm_url", unstr, "State manager base URL")
@@ -287,6 +298,14 @@ func parseCmdLine() {
 
 	if *scn_cache_delayP != unint {
 		app_params.Scn_cache_delay = *scn_cache_delayP
+	}
+
+	if *scn_backoffP != unint {
+		app_params.Scn_backoff = *scn_backoffP
+	}
+
+	if *scn_retriesP != unint {
+		app_params.Scn_retries = *scn_retriesP
 	}
 
 	if *sm_retriesP != unint {
@@ -382,6 +401,8 @@ func parseEnvVars() {
 	__env_parse_string("HMNFD_SCN_IN_URL", &app_params.Scn_in_url)
 	__env_parse_int("HMNFD_SCN_MAX_CACHE", &app_params.Scn_max_cache)
 	__env_parse_int("HMNFD_SCN_CACHE_DELAY", &app_params.Scn_cache_delay)
+	__env_parse_int("HMNFD_SCN_BACKOFF", &app_params.Scn_backoff)
+	__env_parse_int("HMNFD_SCN_RETRIES", &app_params.Scn_retries)
 	__env_parse_int("HMNFD_SM_RETRIES", &app_params.SM_retries)
 	__env_parse_int("HMNFD_SM_TIMEOUT", &app_params.SM_timeout)
 	__env_parse_string("HMNFD_SM_URL", &app_params.SM_url)
@@ -421,6 +442,8 @@ func parseParamJson(param_json []byte, whence int) error {
 	jdata.Scn_in_url = unstr
 	jdata.Scn_max_cache = unint
 	jdata.Scn_cache_delay = unint
+	jdata.Scn_backoff = unint
+	jdata.Scn_retries = unint
 	jdata.SM_url = unstr
 	jdata.SM_retries = unint
 	jdata.SM_timeout = unint
@@ -506,6 +529,12 @@ func parseParamJson(param_json []byte, whence int) error {
 	}
 	if jdata.Scn_cache_delay != unint {
 		tpd.Scn_cache_delay = jdata.Scn_cache_delay
+	}
+	if jdata.Scn_backoff != unint {
+		tpd.Scn_backoff = jdata.Scn_backoff
+	}
+	if jdata.Scn_retries != unint {
+		tpd.Scn_retries = jdata.Scn_retries
 	}
 	if jdata.SM_url != unstr {
 		tpd.SM_url = jdata.SM_url
@@ -650,6 +679,8 @@ func print_app_params() {
 	log.Printf("KV_url:         %s\n", app_params.KV_url)
 	log.Printf("Port:           %d\n", app_params.Port)
 	log.Printf("Scn_in_url:     %s\n", app_params.Scn_in_url)
+	log.Printf("Scn_backoff:    %d\n", app_params.Scn_backoff)
+	log.Printf("Scn_retries:    %d\n", app_params.Scn_retries)
 	log.Printf("SM_retries:     %d\n", app_params.SM_retries)
 	log.Printf("SM_timeout:     %d\n", app_params.SM_timeout)
 	log.Printf("SM_url:         %s\n", app_params.SM_url)

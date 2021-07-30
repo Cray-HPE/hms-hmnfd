@@ -35,9 +35,9 @@ type ppj struct {
     errstr string
 }
 
-var param_exp = `{"Debug":1,"KV_url":"a.b.c.d","Nosm":1,"Port":1234,"Scn_in_url":"e.f.g.h","Scn_max_cache":56,"Scn_cache_delay":78,"SM_retries":12,"SM_timeout":34,"SM_url":"e.f.g.h","Telemetry_host":"aaaa:1234:bbbb","Use_telemetry":0}`
+var param_exp = `{"Debug":1,"KV_url":"a.b.c.d","Nosm":1,"Port":1234,"Scn_in_url":"e.f.g.h","Scn_max_cache":56,"Scn_cache_delay":78,"Scn_retries":6,"Scn_backoff":2,"SM_retries":12,"SM_timeout":34,"SM_url":"e.f.g.h","Telemetry_host":"aaaa:1234:bbbb","Use_telemetry":0}`
 
-var param_inp_patch = `{"Debug":1,"KV_url":"a.b.c.d","Nosm":1,"SM_retries":12,"SM_timeout":34,"SM_url":"e.f.g.h","Scn_max_cache":56,"Scn_cache_delay":78}`
+var param_inp_patch = `{"Debug":1,"KV_url":"a.b.c.d","Nosm":1,"SM_retries":12,"SM_timeout":34,"SM_url":"e.f.g.h","Scn_max_cache":56,"Scn_cache_delay":78,"Scn_retries":6,"Scn_backoff":2}`
 
 
 func disable_logs() {
@@ -59,6 +59,8 @@ func TestGenCurParamJson(t *testing.T) {
     app_params.Scn_in_url = "e.f.g.h"
     app_params.Scn_max_cache = 56
     app_params.Scn_cache_delay = 78
+    app_params.Scn_backoff = 2
+    app_params.Scn_retries = 6
     app_params.SM_retries = 12
     app_params.SM_timeout = 34
     app_params.SM_url = "e.f.g.h"
@@ -82,6 +84,7 @@ func TestParseCmdLine(t *testing.T) {
     os.Args = []string{"app", "--debug=1", "--kv_url=a.b.c.d", "--nosm",
                        "--port=1234", "--scn_in_url=e.f.g.h",
                        "--scn_max_cache=56", "--scn_cache_delay=78",
+                       "--scn_backoff=2", "--scn_retries=6",
                        "--sm_retries=12", "--sm_timeout=34",
                        "--sm_url=e.f.g.h", "--telemetry_host=aaaa:1234:bbbb",
                        "--use_telemetry=0"}
@@ -108,6 +111,8 @@ func TestParseEnvVars(t *testing.T) {
     os.Setenv("HMNFD_SCN_IN_URL","e.f.g.h")
     os.Setenv("HMNFD_SCN_MAX_CACHE","56")
     os.Setenv("HMNFD_SCN_CACHE_DELAY","78")
+    os.Setenv("HMNFD_SCN_BACKOFF","2")
+    os.Setenv("HMNFD_SCN_RETRIES","6")
     os.Setenv("HMNFD_SM_RETRIES","12")
     os.Setenv("HMNFD_SM_TIMEOUT","34")
     os.Setenv("HMNFD_SM_URL","e.f.g.h")
@@ -158,6 +163,8 @@ func TestParseParamJson(t *testing.T) {
     app_params.Scn_in_url = "e.f.g.h"
     app_params.Scn_max_cache = 56
     app_params.Scn_cache_delay = 78
+    app_params.Scn_backoff = 2
+    app_params.Scn_retries = 6
     app_params.SM_retries = 12
     app_params.SM_timeout = 34
     app_params.SM_url = "e.f.g.h"
