@@ -38,6 +38,8 @@ test:
 snyk:
 	./runSnyk.sh
 
-chart:
+update_chart:
 	helm dep up ${CHART_PATH}/${CHART_NAME}
+
+package_chart:
 	helm package ${CHART_PATH}/${CHART_NAME} -d ${CHART_PATH}/.packaged --version ${CHART_VERSION}
