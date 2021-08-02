@@ -29,7 +29,7 @@ pipeline {
 
         stage("Chart") {
             steps {
-                updateCsmHelmChartAppVersion(chartPath: "${WORKSPACE}/kubernetes/.packaged", appVerion:  env.VERSION)
+                updateCsmHelmChartAppVersion(chartPath: "${WORKSPACE}/kubernetes/.packaged", appVersion:  env.VERSION)
                 sh "make chart"
             }
         }
