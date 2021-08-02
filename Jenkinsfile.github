@@ -27,14 +27,9 @@ pipeline {
             }
         }
 
-        stage("Update Chart") {
+        stage("Update Package Chart") {
             steps {
                 sh "make update_chart"
-            }
-        }
-        
-        stage("Package Chart") {
-            steps {
                 updateCsmHelmChartAppVersion(chartPath: "${WORKSPACE}/kubernetes/${CHART_NAME}", appVersion:  env.VERSION)
                 sh "cat kubernetes/${CHART_NAME}/Chart.yaml; make package_chart"
             }
