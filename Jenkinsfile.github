@@ -30,7 +30,7 @@ pipeline {
         stage("Update Chart") {
             steps {
                 sh "cat kubernetes/${CHART_NAME}/Chart.yaml; make update_chart"
-                updateCsmHelmChartAppVersion(chartPath: "kubernetes/${CHART_NAME}", appVersion:  env.VERSION)
+                updateCsmHelmChartAppVersion(chartPath: "${WORKSPACE}/kubernetes/${CHART_NAME}", appVersion:  env.VERSION)
             }
         }
         
@@ -40,10 +40,9 @@ pipeline {
             }
         }
 
-
         stage("Test") {
             steps {
-                sh "make test"
+                make test
             }
         }
 
