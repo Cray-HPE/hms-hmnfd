@@ -29,7 +29,7 @@ pipeline {
 
         stage("Update Chart") {
             steps {
-                sh "cat kubernetes/${CHART_NAME}/Chart.yaml; make update_chart"
+                sh "make update_chart"
             }
         }
         
@@ -42,7 +42,7 @@ pipeline {
 
         stage("Test") {
             steps {
-                make test
+                sh "make test"
             }
         }
 
