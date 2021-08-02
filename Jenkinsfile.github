@@ -29,7 +29,7 @@ pipeline {
 
         stage("Chart") {
             steps {
-                updateCsmHelmChartAppVersion(chartPath: "kubernetes/cray-hms-hmnfd", appVersion:  env.VERSION)
+                updateCsmHelmChartAppVersion(chartPath: "kubernetes/${CHART_NAME}", appVersion:  env.VERSION)
                 sh "make chart"
             }
         }
@@ -37,12 +37,6 @@ pipeline {
         stage("Test") {
             steps {
                 sh "make test"
-            }
-        }
-
-        stage("Snyk") {
-            steps {
-                sh "make snyk"
             }
         }
 
