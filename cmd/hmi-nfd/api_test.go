@@ -917,3 +917,69 @@ func TestPrune(t *testing.T) {
 		t.Error("KV record", key3, "not deleted!")
 	}
 }
+
+func TestSendToTelemetryBus(t *testing.T) {
+	var scn,jdata Scn
+	bt := true
+
+	app_params.Use_telemetry = 1
+	scn.Components = []string{"x0c1s2b3n4"}
+	scn.Enabled = &bt
+	scn.Flag = "OK"
+	scn.Role = "Compute"
+	scn.SubRole = "NCN"
+	scn.SoftwareStatus = "READY"
+	scn.State = "Ready"
+	scn.Timestamp = "01-02-2021T01:02:03"
+
+	sendToTelemetryBus(scn)
+	time.Sleep(time.Second)
+
+	scnStr := <-kq_chan
+	app_params.Use_telemetry = 0
+
+	err := json.Unmarshal([]byte(scnStr),&jdata)
+	if (err != nil) {
+		t.Errorf("ERROR unmarshalling SCN: %v",err)
+	}
+	if (len(jdata.Components) != len(scn.Components)) {
+		t.Errorf("ERROR, num components mismatch: exp: %d, got: %d",
+			len(scn.Components),len(jdata.Components))
+	}
+	if (jdata.Components[0] != scn.Components[0]) {
+		t.Errorf("ERROR, component name mismatch, exp: '%s', got '%s'",
+			scn.Components[0],jdata.Components[0])
+	}
+	if (jdata.Enabled == nil) {
+		t.Errorf("ERROR, Enabled is nil.")
+	}
+	if (*jdata.Enabled != true) {
+		t.Errorf("ERROR, Enabled is false.")
+	}
+	if (jdata.Flag != scn.Flag) {
+		t.Errorf("ERROR, Flag mismatch, exp: '%s', got: '%s'",
+			scn.Flag,jdata.Flag)
+	}
+	if (jdata.Role != scn.Role) {
+		t.Errorf("ERROR, Role mismatch, exp: '%s', got: '%s'",
+			scn.Role,jdata.Role)
+	}
+	if (jdata.SubRole != scn.SubRole) {
+		t.Errorf("ERROR, RoleFlag mismatch, exp: '%s', got: '%s'",
+			scn.SubRole,jdata.SubRole)
+	}
+	if (jdata.SoftwareStatus != scn.SoftwareStatus) {
+		t.Errorf("ERROR, SoftwareStatus mismatch, exp: '%s', got: '%s'",
+			scn.SoftwareStatus,jdata.SoftwareStatus)
+	}
+	if (jdata.State != scn.State) {
+		t.Errorf("ERROR, State mismatch, exp: '%s', got: '%s'",
+			scn.State,jdata.State)
+	}
+	if (jdata.Timestamp != scn.Timestamp) {
+		t.Errorf("ERROR, Timestamp mismatch, exp: '%s', got: '%s'",
+			scn.Timestamp,jdata.Timestamp)
+	}
+}
+
+
