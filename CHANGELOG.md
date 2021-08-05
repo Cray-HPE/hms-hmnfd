@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.8.5] - 2021-08-05
+
+### Changed 
+
+- Added missing time stamps to Kafka telemetry SCNs.
+
 ## [1.8.4] - 2021-07-30
 
 ### Changed 
