@@ -415,10 +415,15 @@ func telemetryBusSend() {
 // tmsg(in):  SCN data to send
 /////////////////////////////////////////////////////////////////////////////
 
-func sendToTelemetryBus(tmsg string) {
+func sendToTelemetryBus(tmsg Scn) {
     if (app_params.Use_telemetry != 0) {
+        ba,baerr := json.Marshal(&tmsg)
+        if (baerr != nil) {
+            log.Printf("ERROR: can't marshal SCN for telemetry: %v",baerr)
+            return
+        }
         select {
-            case kq_chan <- tmsg:
+            case kq_chan <- string(ba):
             default:
                 log.Printf("ERROR: Telemetry queue is full, cannot inject...\n")
         }
@@ -1153,11 +1158,6 @@ func (p *httpStuff) scnHandler(w http.ResponseWriter, r *http.Request) {
         }
     }
 
-    //Send to telemetry bus.  The check of whether or not to send is done
-    //in the send function.
-
-    sendToTelemetryBus(string(body))
-
     jdcMutex.Lock()
 
     //Is this the first SCN on an empty cache?
@@ -1253,6 +1253,7 @@ func checkSCNCache() {
 func handleSCNs() {
     for {
         scn := <-scnQ
+        sendToTelemetryBus(scn)
         doScn(scn)
         if (app_params.Debug > 0) {
             log.Printf("Remaining in Q: %d",len(scnQ))
