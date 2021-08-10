@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.9.6] - 2021-08-10
+
+### Changed
+
+- Added GitHub configuration files and fixed snyk warning.
+
 ## [1.9.5] - 2021-08-05
 
 ### Changed 

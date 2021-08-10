@@ -40,12 +40,6 @@ pipeline {
             }
         }
 
-        stage("Snyk") {
-            steps {
-                sh "make snyk"
-            }
-        }
-
         stage("Publish") {
             steps {
                 script {

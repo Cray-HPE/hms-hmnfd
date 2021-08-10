@@ -66,7 +66,7 @@ EXPOSE 28600
 STOPSIGNAL SIGTERM
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache curl
 
 # Copy the final binary.  
