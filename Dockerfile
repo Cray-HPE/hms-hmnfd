@@ -20,13 +20,13 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS NFD (Node Fanout Daemon).
+# Dockerfile for building Cray-HPE NFD (Node Fanout Daemon).
 
 # Build base just has the packages installed we need.
 FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add build-base
 
 # Base copies in the files we need to test/build.
@@ -66,7 +66,7 @@ EXPOSE 28600
 STOPSIGNAL SIGTERM
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache curl
 
 # Copy the final binary.  
