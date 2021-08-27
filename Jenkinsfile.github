@@ -35,9 +35,15 @@ pipeline {
             }
         }
 
-        stage("Test") {
+        stage("Run Unit Tests") {
             steps {
-                sh "make test"
+                sh "make unittest"
+            }
+        }
+
+        stage("Integration") {
+            steps {
+                sh "make integration"
             }
         }
 
