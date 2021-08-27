@@ -30,7 +30,7 @@ CHART_NAME ?= cray-hms-hmnfd
 CHART_VERSION ?= $(shell cat .version)
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
+	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
 
 test:
 	./runUnitTest.sh

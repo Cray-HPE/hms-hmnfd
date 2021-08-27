@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2019-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -42,46 +42,11 @@ COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
 COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 
 
-### Build Stage ###
-FROM base AS builder
+### Unit Test Stage ###
+FROM base AS testing
 
-RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
-
-
-### Final Stage ###
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
-LABEL maintainer="Hewlett Packard Enterprise"
-EXPOSE 28600
-STOPSIGNAL SIGTERM
-
+# Run unit tests...
+CMD ["sh", "-c", "set -ex && go test -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd"]
 RUN set -ex \
-    && apk -U upgrade \
-    && apk add --no-cache curl
-
-# Copy the final binary.  
-
-COPY --from=builder /usr/local/bin/hmnfd /usr/local/bin
-
-# Run the daemon.  Note that these env vars are likely to be overridden
-# by the Helm chart.
-
-ENV DEBUG=0
-ENV SM_URL="https://cray-smd/hsm/v1"
-ENV INBOUND_SCN_URL="https://cray-hmnfd/hmi/v1/scn"
-ENV SM_RETRIES=3
-ENV SM_TIMEOUT=10
-ENV PORT=28600
-ENV USE_TELEMETRY="--use_telemetry"
-ENV TELEMETRY_HOST="cluster-kafka-bootstrap.sma.svc.cluster.local:9092:cray-hmsstatechange-notifications"
-ENV NOSM=""
-
-# If KV_URL is set to empty the Go code will determine the URL from env vars.
-# This is due to the fact that in Dockerfiles you CANNOT create an env var 
-# using other env vars.
-
-ENV KV_URL=
-
-# nobody 65534:65534
-USER 65534:65534
-
-CMD ["sh", "-c", "hmnfd --debug=$DEBUG $NOSM --sm_url=$SM_URL --sm_retries=$SM_RETRIES --sm_timeout=$SM_TIMEOUT --port=$PORT --kv_url=$KV_URL --scn_in_url=$INBOUND_SCN_URL $USE_TELEMETRY --telemetry_host=$TELEMETRY_HOST"]
+    && go clean -testcache \
+    && go test -cover -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
