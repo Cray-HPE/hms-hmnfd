@@ -53,5 +53,5 @@ for cont in stuff[0]['Containers']:
     addr = addy[:-3]
     buf += "--add-host=%s:%s " % (name,addr)
 
-print buf
+print(buf)
 

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.9.7] - 2021-09-08
+
+### Changed
+
+- Changed the docker image to run as the user nobody
+
 ## [1.9.6] - 2021-08-10
 
 ### Changed
