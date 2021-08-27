@@ -46,7 +46,6 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 FROM base AS testing
 
 # Run unit tests...
-CMD ["sh", "-c", "set -ex && go test -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd"]
 RUN set -ex \
     && go clean -testcache \
     && go test -cover -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
