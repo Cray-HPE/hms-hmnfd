@@ -80,4 +80,7 @@ ENV HMNFD_FANOUT_SYNC=1
 ENV KV_URL="http://etcd:2379"
 #ENV KV_URL="http://etcd-server:2379"
 
+# nobody 65534:65534
+USER 65534:65534
+
 CMD ["sh", "-c", "hmnfd --debug=$DEBUG $NOSM --sm_url=$SM_URL --sm_retries=$SM_RETRIES --sm_timeout=$SM_TIMEOUT -port=$PORT --kv_url=$KV_URL --scn_in_url=$INBOUND_SCN_URL $USE_TELEMETRY --telemetry_host=$TELEMETRY_HOST"]
