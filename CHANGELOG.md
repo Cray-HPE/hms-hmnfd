@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.8.8] - 2021-09-21
+
+### Changed
+
+- Changed cray-service version to ~5.0.0
+
 ## [1.8.7] - 2021-08-27
 
 ### Changed
