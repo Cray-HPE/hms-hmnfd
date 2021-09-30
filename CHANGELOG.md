@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.7.6] - 2021-09-29
+
+## Changed
+
+- Updated Helm repository to cray-algol60.
+- Updated cray-service chart to csm-1.0 version.
+
 ## [1.7.5] - 2021-07-22
 
 ### Changed
