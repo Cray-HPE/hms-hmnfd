@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
-## [1.9.9] - 2021-10-11
+## [1.10.0] - 2021-10-27
 
 ### Added
 

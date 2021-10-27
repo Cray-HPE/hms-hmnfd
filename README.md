@@ -53,7 +53,7 @@ _hmnfd_'s RESTful API is a follows:
     PATCH changes to _hmnfd_ operating parameters
 ```
 
-See https://stash.us.cray.com/projects/HMS/repos/hms-hmi-nfd/browse/api/swagger.yaml for details on the hbtd RESTful API payloads and return values.
+See https://github.com/Cray-HPE/hms-hmi-nfd/blob/master/api/swagger.yaml for details on the hbtd RESTful API payloads and return values.
 
 ## hmnfd Command Line
 
@@ -103,6 +103,12 @@ Then run (add `-d` to the arguments list of `docker run` to run in detached/back
 ```bash
 docker run -p 28500:28500 --name hmnfd cray/hbtd:test
 ```
+
+### hmnfd CT Testing
+
+This repository builds and publishes hms-hmnfd-ct-test RPMs along with the service itself containing tests that verify hmnfd on the
+NCNs of live Shasta systems. The tests require the hms-ct-test-base RPM to also be installed on the NCNs in order to execute.
+The version of the test RPM installed on the NCNs should always match the version of hmnfd deployed on the system.
 
 ## Feature Map
 

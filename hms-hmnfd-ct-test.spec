@@ -28,7 +28,7 @@ Version: %(cat .version)
 Release: %(echo ${BUILD_METADATA})
 Source: %{name}-%{version}.tar.bz2
 Vendor: Hewlett Packard Enterprise
-Requires: hms-ct-test >= 1.8.6
+Requires: hms-ct-test-base >= 1.9.0
 
 # name of this repository
 %define REPO hms-hmi-nfd
@@ -72,5 +72,5 @@ done
 %{TEST_DIR}/*
 
 %changelog
-* Wed Oct 06 2021 Mitch Schooler <mitchell.schooler@hpe.com>
+* Wed Oct 27 2021 Mitch Schooler <mitchell.schooler@hpe.com>
 - Moved CT test packaging from hms-test to individual service repos for their own RPM builds.
