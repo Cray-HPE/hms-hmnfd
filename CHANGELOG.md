@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.10.0] - 2021-10-27
+
+### Added
+
+- CASMHMS-5055 - Added HMNFD CT test RPM.
+
 ## [1.9.8] - 2021-09-21
 
 ### Changed
