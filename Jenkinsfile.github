@@ -61,7 +61,7 @@ pipeline {
         stage("Publish") {
             steps {
                 script {
-                    publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE)
+                    publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE, snykSeverity: 'high')
                     publishCsmHelmCharts(component: env.CHART_NAME, chartsPath: "${WORKSPACE}/kubernetes/.packaged", isStable: env.IS_STABLE)
                     publishCsmRpms(component: env.TEST_NAME, pattern: "dist/hmnfd-ct-test-rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
                     publishCsmRpms(component: env.TEST_NAME, pattern: "dist/hmnfd-ct-test-rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
