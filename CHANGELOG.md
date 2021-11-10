@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.12.0] - 2021-11-09
+
+### Changed
+
+- Added V2 API to support XName filtering in SCN subscriptions.
+
 ## [1.11.0] - 2021-11-04
 
 ### Added

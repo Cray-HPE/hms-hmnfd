@@ -31,11 +31,12 @@ import (
     "io/ioutil"
     "strings"
     "math"
-    "github.com/Cray-HPE/hms-base"
     "regexp"
     "reflect"
     "time"
     "sync"
+    "github.com/Cray-HPE/hms-base"
+    "github.com/gorilla/mux"
 )
 
 // A note about subscription tracking and SCN forwarding:
@@ -97,17 +98,20 @@ type Scn struct {
 // structure format.  TODO: put in a common place?
 
 type ScnSubscribe struct {
-    Components []string     `json:"Components,omitempty"`     //SCN components (usually nodes)
-    Subscriber string       `json:"Subscriber"`               //[service@]xname (nodes) or 'hmnfd'
-    Enabled *bool           `json:"Enabled,omitempty"`        //true==all enable/disable SCNs
-    Roles []string          `json:"Roles,omitempty"`          //Subscribe to role changes
-    SubRoles []string       `json:"SubRoles,omitempty"`       //Subscribe to sub-role changes
-    SoftwareStatus []string `json:"SoftwareStatus,omitempty"` //Subscribe to these SW SCNs
-    States []string         `json:"States,omitempty"`         //Subscribe to these HW SCNs
-    Url string              `json:"Url"`                      //URL to send SCNs to
+    Components []string     `json:"Components,omitempty"`      //SCN components (usually nodes)
+    Subscriber string       `json:"Subscriber,omitempty"`      //[service@]xname (nodes) or 'hmnfd'
+    SubscriberComponent string  `json:"SubscriberComponent,omitempty"` //xname (nodes) or 'hmnfd'
+    SubscriberAgent string  `json:"SubscriberAgent,omitempty"` //agent
+    Enabled *bool           `json:"Enabled,omitempty"`         //true==all enable/disable SCNs
+    Roles []string          `json:"Roles,omitempty"`           //Subscribe to role changes
+    SubRoles []string       `json:"SubRoles,omitempty"`        //Subscribe to sub-role changes
+    SoftwareStatus []string `json:"SoftwareStatus,omitempty"`  //Subscribe to these SW SCNs
+    States []string         `json:"States,omitempty"`          //Subscribe to these HW SCNs
+    Url string              `json:"Url"`                       //URL to send SCNs to
 }
 
 // JSON data for subscription deletion coming into /subscribe
+// NOTE: this is v1 only (deprecated)
 
 type NodeSubscriptionDelete struct {
     Subscriber string  `json:"Subscriber"`
@@ -126,6 +130,18 @@ type SubData struct {
 type SubscriptionList struct {
     SubscriptionList []ScnSubscribe `json:"SubscriptionList"`
 }
+
+// REST API routing
+
+type Route struct {
+	Name        string
+	Method      string
+	Pattern     string
+	HandlerFunc http.HandlerFunc
+}
+
+type Routes []Route
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -567,7 +583,7 @@ func handleSubscribeDeleteError(errinst string, w http.ResponseWriter, body []by
 // Return:    nil on success, error string on error.
 /////////////////////////////////////////////////////////////////////////////
 
-func checkSubscriptionPost(jdraw ScnSubscribe) error {
+func checkSubscription_v1(jdraw ScnSubscribe) error {
     if (jdraw.Subscriber == "") {
         return fmt.Errorf("Subscription request missing Subscriber field.")
     } else {
@@ -576,6 +592,24 @@ func checkSubscriptionPost(jdraw ScnSubscribe) error {
             return fmt.Errorf("Subscription request Subscriber field has invalid format.")
         }
     }
+    if (len(jdraw.Components) == 0) {
+        return fmt.Errorf("Subscription request missing Components array field.")
+    }
+    if (jdraw.Url == "") {
+        return fmt.Errorf("Subscription request missing Url field.")
+    }
+
+    //At least one of the following must be present
+
+    if ((len(jdraw.States) == 0) && (len(jdraw.SoftwareStatus) == 0) &&
+        (jdraw.Enabled == nil) && (len(jdraw.Roles) == 0) &&
+        (len(jdraw.SubRoles) == 0)) {
+        return fmt.Errorf("Subscription request needs at least one of: States, SoftwareStatus, Roles, SubRoles.")
+    }
+    return nil
+}
+
+func checkSubscription_v2(jdraw ScnSubscribe) error {
     if (len(jdraw.Components) == 0) {
         return fmt.Errorf("Subscription request missing Components array field.")
     }
@@ -625,7 +659,7 @@ func doSubscribePost(w http.ResponseWriter, r *http.Request) {
 
     //Make sure all mandatory fields are present.
 
-    err = checkSubscriptionPost(jdata)
+    err = checkSubscription_v1(jdata)
     if (err != nil) {
         log.Println("Missing subscription payload fields:",err);
         pdet := base.NewProblemDetails("about:blank",
@@ -664,7 +698,7 @@ func doSubscribePost(w http.ResponseWriter, r *http.Request) {
 
     //Construct the subscription ETCD key and see if it already exists.
 
-    subKey := makeSubscriptionKey(jdata)
+    subKey := makeSubscriptionKey_V1(jdata)
 
     //Check if the key exists.  If so, that is an error.  TODO: should 
     //probably also check all subscriptions for this XName, looking at
@@ -742,7 +776,7 @@ func doSubscribePatch(w http.ResponseWriter, r *http.Request) {
 
     //Make sure all fields are present.  All are mandatory.
 
-    err = checkSubscriptionPost(jdata) 
+    err = checkSubscription_v1(jdata)
     if (err != nil) {
         log.Println("Missing subscription payload fields:",err);
         pdet := base.NewProblemDetails("about:blank",
@@ -820,7 +854,7 @@ func doSubscribePatch(w http.ResponseWriter, r *http.Request) {
             newSD.Url = jdata.Url
             newSD.ScnNodes = jdata.Components
 
-            exKey := makeSubscriptionKey(jdata)
+            exKey := makeSubscriptionKey_V1(jdata)
             if (exKey != kv.Key) {
                 if (app_params.Debug > 1) {
                     log.Printf("Replacing subscription key '%s' with '%s'.\n",
@@ -966,35 +1000,6 @@ func doSubscribeDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Receive a subscription to an SCN from a node via the /subscribe API.
-// 
-// w(in):  HTTP response writer
-// r(in):  HTTP request
-// Return: None.
-/////////////////////////////////////////////////////////////////////////////
-
-func (p *httpStuff) scnSubscribeHandler(w http.ResponseWriter, r *http.Request) {
-    errinst := "/"+URL_SUBSCRIBE
-
-    if (r.Method == "POST") {
-        doSubscribePost(w,r)
-    } else if (r.Method == "PATCH") {
-        doSubscribePatch(w,r)
-    } else if (r.Method == "DELETE") {
-        doSubscribeDelete(w,r)
-    } else {
-        log.Printf("ERROR: request is not a POST, PATCH or a DELETE.\n")
-        pdet := base.NewProblemDetails("about:blank",
-                                       "Invalid Request",
-                                       "Only POST, PATCH and DELETE operations supported",
-                                       errinst,http.StatusMethodNotAllowed)
-        //It is required to have an "Allow:" header with this error
-        w.Header().Add("Allow","POST,PATCH,DELETE")
-        base.SendProblemDetails(w,pdet,0)
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // Convenience func to create a "raw" list of states, SW statuses, enabled, 
 // roles, and subroles, used for SCN matching.
 //
@@ -1028,27 +1033,18 @@ func getSCNAttrs(jdata Scn) []string {
 //
 // Format is: sub#xname[#hs.state[.state...]][#sws.swstate[.swstate...]][#enbl.enbl][#roles.Role[.Role...]][#subroles.SubRole[.SubRole...]][#svc.Svc]
 //
-// jdata(in): Subscription request data
-// Return:    ETCD key used for storing subscription.
+// jdata(in):      Subscription request data
+// subXName(in):   Subscriber component name, or "hmnfd"
+// subSvcname(in): Subscriber SW agent name, blank if xname == "hmnfd"
+// Return:         ETCD key used for storing subscription.
 /////////////////////////////////////////////////////////////////////////////
 
-func makeSubscriptionKey(jdata ScnSubscribe) string {
+func makeSubscriptionKey_V2(jdata ScnSubscribe, subXName, subSvcName string) string {
     var subkey string
-    var toks []string
-
-
-    toks = strings.Split(jdata.Subscriber,SUBSCRIBER_SVC_DELIM)
-    
-    xname   := strings.ToLower(jdata.Subscriber)
-    svcname := ""
-    if (len(toks) > 1) {
-        xname   = strings.ToLower(toks[SERVICE_TOKNUM_XNAME])
-        svcname = strings.ToLower(toks[SERVICE_TOKNUM_SVC])
-    }
 
     //Start with the 'base'
 
-    subkey = SUBSCRIBER_KEY_PREFIX+SUBSCRIBER_KEY_DELIM+xname
+    subkey = SUBSCRIBER_KEY_PREFIX+SUBSCRIBER_KEY_DELIM+subXName
 
     //States
 
@@ -1095,12 +1091,25 @@ func makeSubscriptionKey(jdata ScnSubscribe) string {
 
     //Service, if any
 
-    if (svcname != "") {
+    if (subSvcName != "") {
         subkey = subkey + SUBSCRIBER_KEY_DELIM + SUBSCRIBER_KEY_SVC + 
-                 SUBSCRIBER_KEYCAT_DELIM + svcname
+                 SUBSCRIBER_KEYCAT_DELIM + subSvcName
     }
 
     return subkey
+}
+
+func makeSubscriptionKey_V1(jdata ScnSubscribe) string {
+    toks    := strings.Split(jdata.Subscriber,SUBSCRIBER_SVC_DELIM)
+    xname   := strings.ToLower(jdata.Subscriber)
+    svcname := ""
+
+    if (len(toks) > 1) {
+        xname   = strings.ToLower(toks[SERVICE_TOKNUM_XNAME])
+        svcname = strings.ToLower(toks[SERVICE_TOKNUM_SVC])
+    }
+
+	return makeSubscriptionKey_V2(jdata,xname,svcname)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1112,7 +1121,7 @@ func makeSubscriptionKey(jdata ScnSubscribe) string {
 // Return: None.
 /////////////////////////////////////////////////////////////////////////////
 
-func (p *httpStuff) scnHandler(w http.ResponseWriter, r *http.Request) {
+func scnHandler(w http.ResponseWriter, r *http.Request) {
     var jdata Scn
 
     errinst := "/"+URL_SCN
@@ -1518,32 +1527,39 @@ func paramsGet(w http.ResponseWriter, r *http.Request) {
     w.Write(rparams)
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Handle parameter get/patch operations via the /params API.
-// 
-// w(in):  HTTP response writer
-// r(in):  HTTP request
-// Return: None.
-/////////////////////////////////////////////////////////////////////////////
-
-func (p *httpStuff) paramsHandler(w http.ResponseWriter, r *http.Request) {
-    errinst := "/"+URL_PARAMS
-
-    if (r.Method == "PATCH") {
-        paramsPatch(w,r)
-    } else if (r.Method == "GET") {
-        paramsGet(w,r)
-    } else {
-        log.Printf("ERROR: request is not a PATCH or a GET.\n")
-        pdet := base.NewProblemDetails("about:blank",
-                                       "Invalid Request",
-                                       "Only PATCH and GET operations supported",
-                                       errinst,http.StatusMethodNotAllowed)
-        //It is required to have an "Allow:" header with this error
-        w.Header().Add("Allow","GET,PATCH")
-        base.SendProblemDetails(w,pdet,0)
-        return
-    }
+func populateSubinfo(xname string, tt []string, subinfo *ScnSubscribe) {
+	switch (tt[0]) {
+		case SUBSCRIBER_KEY_HWS:
+			for iy := 1; iy < len(tt); iy ++ {
+				subinfo.States = append(subinfo.States,tt[iy])
+			}
+			break
+		case SUBSCRIBER_KEY_SWS:
+			for iy := 1; iy < len(tt); iy ++ {
+				subinfo.SoftwareStatus = append(subinfo.SoftwareStatus,tt[iy])
+			}
+			break
+		case SUBSCRIBER_KEY_ENBL:
+			enn := new(bool)
+			*enn = true
+			subinfo.Enabled = enn
+			break
+		case SUBSCRIBER_KEY_ROLES:
+			for iy := 1; iy < len(tt); iy ++ {
+				subinfo.Roles = append(subinfo.Roles,tt[iy])
+			}
+			break
+		case SUBSCRIBER_KEY_SUBROLES:
+			for iy := 1; iy < len(tt); iy ++ {
+				subinfo.SubRoles = append(subinfo.SubRoles,tt[iy])
+			}
+			break
+		case SUBSCRIBER_KEY_SVC:
+			subinfo.Subscriber = tt[1] + SUBSCRIBER_SVC_DELIM + xname
+            subinfo.SubscriberComponent = xname
+            subinfo.SubscriberAgent = tt[1]
+			break
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1555,7 +1571,7 @@ func (p *httpStuff) paramsHandler(w http.ResponseWriter, r *http.Request) {
 // Return: None.
 /////////////////////////////////////////////////////////////////////////////
 
-func (p *httpStuff) subscriptionsHandler(w http.ResponseWriter, r *http.Request) {
+func subscriptionsHandler(w http.ResponseWriter, r *http.Request) {
     var sublist SubscriptionList
 
     errinst := "/"+URL_SUBSCRIPTIONS
@@ -1597,37 +1613,8 @@ func (p *httpStuff) subscriptionsHandler(w http.ResponseWriter, r *http.Request)
         subinfo.Subscriber = toks[SUBSCRIBER_TOKNUM_XNAME]
 
         for ix := SUBSCRIBER_TOKNUM_XNAME+1; ix < len(toks); ix ++ {
-            enn := false
             tt := strings.Split(toks[ix],SUBSCRIBER_KEYCAT_DELIM)
-            switch (tt[0]) {
-                case SUBSCRIBER_KEY_HWS:
-                    for iy := 1; iy < len(tt); iy ++ {
-                        subinfo.States = append(subinfo.States,tt[iy])
-                    }
-                    break
-                case SUBSCRIBER_KEY_SWS:
-                    for iy := 1; iy < len(tt); iy ++ {
-                        subinfo.SoftwareStatus = append(subinfo.SoftwareStatus,tt[iy])
-                    }
-                    break
-                case SUBSCRIBER_KEY_ENBL:
-                    enn = true
-                    subinfo.Enabled = &enn
-                    break
-                case SUBSCRIBER_KEY_ROLES:
-                    for iy := 1; iy < len(tt); iy ++ {
-                        subinfo.Roles = append(subinfo.Roles,tt[iy])
-                    }
-                    break
-                case SUBSCRIBER_KEY_SUBROLES:
-                    for iy := 1; iy < len(tt); iy ++ {
-                        subinfo.SubRoles = append(subinfo.SubRoles,tt[iy])
-                    }
-                    break
-                case SUBSCRIBER_KEY_SVC:
-                    subinfo.Subscriber = tt[1] + SUBSCRIBER_SVC_DELIM + toks[SUBSCRIBER_TOKNUM_XNAME]
-                    break
-            }
+            populateSubinfo(toks[SUBSCRIBER_TOKNUM_XNAME],tt,&subinfo)
         }
 
         //Unmarshal the key's value to get the components
@@ -1666,4 +1653,146 @@ func (p *httpStuff) subscriptionsHandler(w http.ResponseWriter, r *http.Request)
     w.WriteHeader(http.StatusOK)
     w.Write(ba)
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// Generate the API routes
+/////////////////////////////////////////////////////////////////////////////
+
+func newRouter(routes []Route) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+	for _, route := range routes {
+		var handler http.Handler
+		handler = route.HandlerFunc
+		router.
+			Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(handler)
+	}
+	return router
+}
+
+// Create the API route descriptors.
+
+func generateRoutes() Routes {
+	v1Ubase := URL_DELIM + URL_BASE + URL_DELIM + URL_V1 + "/"
+	v2Ubase := URL_DELIM + URL_BASE + URL_DELIM + URL_V2 + "/"
+
+	return Routes{
+		//V1 routes
+		Route{"paramsGet",
+			strings.ToUpper("Get"),
+			v1Ubase + URL_PARAMS,
+			paramsGet,
+		},
+		Route{"paramsPatch",
+			strings.ToUpper("Patch"),
+			v1Ubase + URL_PARAMS,
+			paramsPatch,
+		},
+		Route{"livenessHandler",
+			strings.ToUpper("Get"),
+			v1Ubase + URL_LIVENESS,
+			livenessHandler,
+		},
+		Route{"readinessHandler",
+			strings.ToUpper("Get"),
+			v1Ubase + URL_READINESS,
+			readinessHandler,
+		},
+		Route{"healthHandler",
+			strings.ToUpper("Get"),
+			v1Ubase + URL_HEALTH,
+			healthHandler,
+		},
+		Route{"subscriptionsHandler",
+			strings.ToUpper("Get"),
+			v1Ubase + URL_SUBSCRIPTIONS,
+			subscriptionsHandler,
+		},
+		Route{"scnHandler",
+			strings.ToUpper("Post"),
+			v1Ubase + URL_SCN,
+			scnHandler,
+		},
+		Route{"doSubscribePost",
+			strings.ToUpper("Post"),
+			v1Ubase + URL_SUBSCRIBE,
+			doSubscribePost,
+		},
+		Route{"doSubscribePatch",
+			strings.ToUpper("Patch"),
+			v1Ubase + URL_SUBSCRIBE,
+			doSubscribePatch,
+		},
+		Route{"doSubscribeDelete",
+			strings.ToUpper("Delete"),
+			v1Ubase + URL_SUBSCRIBE,
+			doSubscribeDelete,
+		},
+
+		//V2 routes
+		Route{"paramsGet",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_PARAMS,
+			paramsGet,
+		},
+		Route{"paramsPatch",
+			strings.ToUpper("Patch"),
+			v2Ubase + URL_PARAMS,
+			paramsPatch,
+		},
+		Route{"livenessHandler",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_LIVENESS,
+			livenessHandler,
+		},
+		Route{"readinessHandler",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_READINESS,
+			readinessHandler,
+		},
+		Route{"healthHandler",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_HEALTH,
+			healthHandler,
+		},
+		Route{"subscriptionsHandler",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_SUBSCRIPTIONS,
+			subscriptionsHandler,
+		},
+		Route{"subscriptionsXNameGetHandler",
+			strings.ToUpper("Get"),
+			v2Ubase + URL_SUBSCRIPTIONS + "/{xname}",
+			subscriptionsXNameGetHandler,
+		},
+		Route{"subscriptionsAgentPostHandler",
+			strings.ToUpper("Post"),
+			v2Ubase + URL_SUBSCRIPTIONS + "/{xname}/agents/{agent}",
+			subscriptionsAgentPostHandler,
+		},
+		Route{"subscriptionsAgentPatchHandler",
+			strings.ToUpper("Patch"),
+			v2Ubase + URL_SUBSCRIPTIONS + "/{xname}/agents/{agent}",
+			subscriptionsAgentPatchHandler,
+		},
+		Route{"subscriptionsAgentDeleteHandler",
+			strings.ToUpper("Delete"),
+			v2Ubase + URL_SUBSCRIPTIONS + "/{xname}/agents/{agent}",
+			subscriptionsAgentDeleteHandler,
+		},
+		Route{"subscriptionsXNameDeleteHandler",
+			strings.ToUpper("Delete"),
+			v2Ubase + URL_SUBSCRIPTIONS + "/{xname}/agents",
+			subscriptionsXNameDeleteHandler,
+		},
+		Route{"scnHandler",
+			strings.ToUpper("Post"),
+			v2Ubase + URL_SCN,
+			scnHandler,
+		},
+	}
+}
+
 

@@ -35,10 +35,9 @@ import (
 
 func TestLiveness(t *testing.T) {
 	// intialize a bunch of stuff for the tests
-	hstuff := new(httpStuff)
 	var ba []byte
 	reqPayload := bytes.NewBuffer(ba)
-	handler1 := http.HandlerFunc(hstuff.livenessHandler)
+	handler1 := http.HandlerFunc(livenessHandler)
 
 	// test valid request
 	req1, _ := http.NewRequest("GET", "http://localhost:8080/hmnfd/v1/liveness", reqPayload)
@@ -67,10 +66,9 @@ func TestLiveness(t *testing.T) {
 
 func TestReadiness(t *testing.T) {
 	// intialize a bunch of stuff for the tests
-	hstuff := new(httpStuff)
 	var ba []byte
 	reqPayload := bytes.NewBuffer(ba)
-	handler1 := http.HandlerFunc(hstuff.readinessHandler)
+	handler1 := http.HandlerFunc(readinessHandler)
 
 	// test valid request
 	req1, _ := http.NewRequest("GET", "http://localhost:8080/hmnfd/v1/readiness", reqPayload)
@@ -123,10 +121,9 @@ func TestReadiness(t *testing.T) {
 
 func TestHealth(t *testing.T) {
 	// intialize a bunch of stuff for the tests
-	hstuff := new(httpStuff)
 	var ba []byte
 	reqPayload := bytes.NewBuffer(ba)
-	handler1 := http.HandlerFunc(hstuff.healthHandler)
+	handler1 := http.HandlerFunc(healthHandler)
 
 	// take existing KVStore if present and set aside - make sure
 	// the existing one gets restored on exit

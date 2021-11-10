@@ -41,7 +41,7 @@ type HealthResponse struct {
 }
 
 // doHealth - returns useful information about the service to the user
-func (p *httpStuff) healthHandler(w http.ResponseWriter, r *http.Request) {
+func healthHandler(w http.ResponseWriter, r *http.Request) {
 	// NOTE: this is provided as a debugging aid for administrators to
 	//  find out what is going on with the system.  This should return
 	//  information in a human-readable format that will help to
@@ -138,7 +138,7 @@ func (p *httpStuff) healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // doReadiness - used for k8s readiness check
-func (p *httpStuff) readinessHandler(w http.ResponseWriter, r *http.Request) {
+func readinessHandler(w http.ResponseWriter, r *http.Request) {
 	// NOTE: this is coded in accordance with kubernetes best practices
 	//  for liveness/readiness checks.  This function should only be
 	//  used to indicate if something is wrong with this service that
@@ -201,7 +201,7 @@ func (p *httpStuff) readinessHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // doLiveness - used for k8s liveness check
-func (p *httpStuff) livenessHandler(w http.ResponseWriter, r *http.Request) {
+func livenessHandler(w http.ResponseWriter, r *http.Request) {
 	// NOTE: this is coded in accordance with kubernetes best practices
 	//  for liveness/readiness checks.  This function should only be
 	//  used to indicate the server is still alive and processing requests.

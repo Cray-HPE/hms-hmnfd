@@ -242,4 +242,223 @@ stages:
             SubRoles:
               - "ncn-m"
               - "ncn-w"
+### V2
+  - name: Delete all existing subscriptions
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x0c1s2b0n3/agents"
+      verify: False
+      method: DELETE
+    response:
+      status_code: 204
+
+  - name: Read back empty subscription
+    request:
+      url: "{hmnfd_url}/v2/subscriptions"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        SubscriptionList: null
+
+  - name: Create subscription via the /subscriptions/{xname}/agents/{agent} API using POST
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x0c1s2b0n3/agents/node_emu"
+      verify: False
+      method: POST
+      json:
+        Url: "http://x0c1s2b0n3.local:1234/scn_ep"
+        Components:
+          - "x1111c0s0b0n0"
+          - "x2222c0s0b0n0"
+        States:
+          - "Standby"
+          - "Off"
+        SoftwareStatus:
+          - "AdminDown"
+          - "AdminUnhealthy"
+        Enabled: true
+        Roles:
+          - "Compute"
+          - "Service"
+        SubRoles:
+          - "ncn-m"
+          - "ncn-w"
+    response:
+      status_code: 200
+
+  - name: Read back subscriptions from /subscriptions API
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x0c1s2b0n3"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        SubscriptionList:
+          -
+            SubscriberComponent: "x0c1s2b0n3"
+            SubscriberAgent: "node_emu"
+            Url: "http://x0c1s2b0n3.local:1234/scn_ep"
+            Components:
+              - "x1111c0s0b0n0"
+              - "x2222c0s0b0n0"
+            States:
+              - "standby"
+              - "off"
+            SoftwareStatus:
+              - "admindown"
+              - "adminunhealthy"
+            Enabled: true
+            Roles:
+              - "compute"
+              - "service"
+            SubRoles:
+              - "ncn-m"
+              - "ncn-w"
+
+  - name: Create 2nd subscription via the /subscriptions/{xname}/agents/{agent} API using POST
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x100c1s2b0n3/agents/node_emu"
+      verify: False
+      method: POST
+      json:
+        Url: "http://x100c1s2b0n3.local:5678/scn_ep"
+        Components:
+          - "x3333c0s0b0n0"
+          - "x4444c0s0b0n0"
+        States:
+          - "Ready"
+    response:
+      status_code: 200
+
+  - name: Read back subscriptions from /subscriptions API
+    request:
+      url: "{hmnfd_url}/v2/subscriptions"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        SubscriptionList:
+          -
+            SubscriberComponent: "x0c1s2b0n3"
+            SubscriberAgent: "node_emu"
+            Url: "http://x0c1s2b0n3.local:1234/scn_ep"
+            Components:
+              - "x1111c0s0b0n0"
+              - "x2222c0s0b0n0"
+            States:
+              - "standby"
+              - "off"
+            SoftwareStatus:
+              - "admindown"
+              - "adminunhealthy"
+            Enabled: true
+            Roles:
+              - "compute"
+              - "service"
+            SubRoles:
+              - "ncn-m"
+              - "ncn-w"
+          -
+            SubscriberComponent: "x100c1s2b0n3"
+            SubscriberAgent: "node_emu"
+            Url: "http://x100c1s2b0n3.local:5678/scn_ep"
+            Components:
+              - "x3333c0s0b0n0"
+              - "x4444c0s0b0n0"
+            States:
+              - "ready"
+
+  - name: Modify a subscription via the /subscribe/{xname}/agents/{agent} API using PATCH
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x100c1s2b0n3/agents/node_emu"
+      verify: False
+      method: PATCH
+      json:
+        Url: "http://x100c1s2b0n3.local:5678/scn_ep"
+        Components:
+          - "x0c5s5b0n5"
+          - "x0c6s6b0n6"
+        Roles:
+          - "Service"
+    response:
+      status_code: 204
+
+  - name: Read back modified subscriptions from /subscriptions API
+    request:
+      url: "{hmnfd_url}/v2/subscriptions"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        SubscriptionList:
+          -
+            SubscriberComponent: "x0c1s2b0n3"
+            SubscriberAgent: "node_emu"
+            Url: "http://x0c1s2b0n3.local:1234/scn_ep"
+            Components:
+              - "x1111c0s0b0n0"
+              - "x2222c0s0b0n0"
+            States:
+              - "standby"
+              - "off"
+            SoftwareStatus:
+              - "admindown"
+              - "adminunhealthy"
+            Enabled: true
+            Roles:
+              - "compute"
+              - "service"
+            SubRoles:
+              - "ncn-m"
+              - "ncn-w"
+          -
+            SubscriberComponent: "x100c1s2b0n3"
+            SubscriberAgent: "node_emu"
+            Url: "http://x100c1s2b0n3.local:5678/scn_ep"
+            Components:
+              - "x0c5s5b0n5"
+              - "x0c6s6b0n6"
+            Roles:
+              - "service"
+
+  - name: Delete one of the subscriptions
+    request:
+      url: "{hmnfd_url}/v2/subscriptions/x100c1s2b0n3/agents/node_emu"
+      verify: False
+      method: DELETE
+    response:
+      status_code: 204
+
+  - name: Read back post-DELETEd subscriptions from /subscriptions API
+    request:
+      url: "{hmnfd_url}/v2/subscriptions"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        SubscriptionList:
+          -
+            Subscriber: "node_emu@x0c1s2b0n3"
+            Url: "http://x0c1s2b0n3.local:1234/scn_ep"
+            Components:
+              - "x1111c0s0b0n0"
+              - "x2222c0s0b0n0"
+            States:
+              - "standby"
+              - "off"
+            SoftwareStatus:
+              - "admindown"
+              - "adminunhealthy"
+            Enabled: true
+            Roles:
+              - "compute"
+              - "service"
+            SubRoles:
+              - "ncn-m"
+              - "ncn-w"
 
