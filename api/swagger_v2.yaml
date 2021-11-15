@@ -36,8 +36,8 @@ info:
     * Create state change notifications for distribution to subscribers
 
     ## Deprecation Notice: V1 of the HMS service has been deprecated as of CSM version 1.2.0. 
-    The V1 HSM API’s will be removed in the CSM version 1.6 release.
-    All consumers of the V1 HSM API interface will need to move to the V2 interface prior to the CSM 1.6 release.
+    The V1 HSM API’s will be removed in the CSM version 1.5 release.
+    All consumers of the V1 HSM API interface will need to move to the V2 interface prior to the CSM 1.5 release.
 
     ## Resources
 
@@ -302,11 +302,15 @@ paths:
       - in: path
         name: xname
         required: true
+        description: The XName of the subscribing component (typically a node)
         schema:
-          $ref: '#/components/schemas/XName.1.0.0'
+#          $ref: '#/components/schemas/XName.1.0.0'
+          type: string
+          example: x1000c0s0b0n0
       - in: path
         name: agent
         required: true
+        description: The software agent running on the subscribing component
         schema:
           type: string
           example: scnHandler
@@ -315,12 +319,12 @@ paths:
         - subscriptions
       summary: Subscribe to a state change notification
       description: >-
-        Subscribe to state change notifications for a set of nodes. Once this is
-        done, the subscribing nodes will receive these notifications as they
+        Subscribe to state change notifications for a set of components. Once this is
+        done, the subscribing components will receive these notifications as they
         occur, using the URL specified at subscription time.  The XName of the
         subscribing component as well as the software agent doing the subscribing
         are specified in the URL path.
-      operationId: doSubscriptionPATCHV2
+      operationId: doSubscriptionPOSTV2
       requestBody:
         $ref: '#/components/requestBodies/SubscribePostV2'
       responses:
@@ -394,8 +398,10 @@ paths:
       summary: Modify a subscription to state change notifications
       description: >-
         Modify an existing subscription to state change notifications for a 
-        nodes and agent.
-      operationId: doSubscriptionPATCH
+        component and software agent.  The XName of the subscribing component 
+        as well as the software agent doing the subscribing are specified in 
+        the URL path.
+      operationId: doSubscriptionPATCHV2
       requestBody:
         $ref: '#/components/requestBodies/SubscribePostV2'
       responses:
@@ -468,8 +474,11 @@ paths:
         - subscriptions
       summary: Delete a specific state change notification subscription
       description: >-
-        Delete a specific state change notification subscription associated with a target component and a target software agent.
-      operationId: doSubscriptionDeleteXNameAgent
+        Delete a specific state change notification subscription associated 
+        with a target component and a target software agent.  The XName of the
+        subscribing component as well as the software agent on the subscribing 
+        component are specified in the URL path.
+      operationId: doSubscriptionDeleteXNameAgentV2
       responses:
         '204':
           description: Success.
@@ -890,14 +899,15 @@ components:
         Subscriber:
           description: >-
             This is the xname of the subscriber. It can have an optional service
-            name.
+            name.  Note that this is only used for backward compatibility with
+            the V1 API, and is not actually used.
           type: string
-          example: scnHandler@x0c1s2b0n3
+          example: scnHandler@x1000c1s2b0n3
         SubscriberComponent:
           description: >-
             This is the xname of the subscriber. 
           type: string
-          example: x0c1s2b0n3
+          example: x1000c1s2b0n3
         SubscriberAgent:
           description: >-
             This is the name of the subscribing software agent.
