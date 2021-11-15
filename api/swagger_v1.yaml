@@ -36,8 +36,8 @@ info:
     * Create state change notifications for distribution to subscribers
 
     ## Deprecation Notice: V1 of the HMS service has been deprecated as of CSM version 1.2.0. 
-    The V1 HSM API’s will be removed in the CSM version 1.5 release.
-    All consumers of the V1 HSM API interface will need to move to the V2 interface prior to the CSM 1.5 release.
+    The V1 HMNFD API’s will be removed in the CSM version 1.5 release.
+    All consumers of the V1 HMNFD API interface will need to move to the V2 interface prior to the CSM 1.5 release.
 
     ## Resources
 
