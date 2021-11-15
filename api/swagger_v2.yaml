@@ -1,0 +1,1148 @@
+openapi: 3.0.0
+info:
+  description: >-
+    Nodes like compute nodes or user access nodes may want to be notified when
+    other nodes or components in the system change state. For example, in a
+    booted system, a node may be in tight communication with other nodes in the
+    system and need to be notified when any of those nodes go away.
+
+    The HMS Notification Fanout Daemon (HMNFD) provides the Hardware State
+    Manager with the capability of fanning out state change notifications to
+    subscribing compute nodes. HMNFD provides the ability to notify subscribers
+    of component hardware state changes and other changes made to and by the
+    Hardware State Manager.
+
+    To receive notifications, a compute node must have an http or https based HMNFD API
+    endpoint service running. This is where the State Change Notifications will
+    be sent when they occur. HMNFD works with the Hardware State Manager and
+    distributes state changes and manages subscriptions.
+
+
+    The REST API provides the following functions:
+
+    * Subscription for component state changes:
+        * Hardware state (On, Off, Ready, Standby, Halt etc.)
+        * Logical state (arbitrary like AdminDown, Other)
+        * Role (Compute, Management, Application etc.)
+        * Enabled state
+        * Flag (OK, Alert, Warning, etc.)
+
+    * View current subscriptions
+
+    * Delete subscriptions
+
+    * Retrieve and modify current service operating parameters
+
+    * Create state change notifications for distribution to subscribers
+
+    ## Deprecation Notice: V1 of the HMS service has been deprecated as of CSM version 1.2.0. 
+    The V1 HMNFD API’s will be removed in the CSM version 1.5 release.
+    All consumers of the V1 HMNFD API interface will need to move to the V2 interface prior to the CSM 1.5 release.
+
+    ## Resources
+
+    ### /subscriptions
+
+    Manage and view subscriptions to notifications. This resource is generally 
+    used by compute nodes.
+
+    ### /scn
+
+    State change notification messages sent from Hardware State Manager to
+    HMNFD; the same format is used for notifications sent by HMNFD to
+    subscribers. This resource applies only to the HSM.
+
+    ### /params
+
+    Retrieve or update configurable parameters.
+
+    ### /health
+
+    Retrieve health information for the service and its dependencies.
+
+    ## Workflows
+
+    ### Manage SCN Subscriptions
+
+    #### GET /subscriptions
+
+    Retrieve and view current subscriptions.
+
+    #### POST /subscriptions/{xname}/agents/{agent}
+
+    A node will subscribe to whatever state change notifications (SCNs) it wants
+    to receive. Thus, the node needs to have a service running to which HMNFD can
+    send, via REST, the subscribed-to SCNs. A URL that tells where to send the
+    SCNs is provided as part of the request body schema. Once a subscribed-to
+    SCN occurs, NFD sends it to the node's service via a REST call to the URL
+    supplied during the subscribe operation.  The {xname} and {agent} segments
+    of the URL state which node and which agent on that node are doing the
+    subscribing.  The subscription request info is in the body of the PUT 
+    payload.
+
+    #### PATCH /subscriptions/{xname}/agents/{agent}
+
+    Modify an existing SCN subscription.  Component list, component states, etc.
+    can be modified with this request, which will remain associated with the
+    component and software agent specified in the URL.
+
+    #### DELETE /subscriptions/{xname}/agents
+
+    Delete all subscriptions that are not needed on a given node.
+
+    #### DELETE /subscriptions/{xname}/agents/{agent}
+
+    Delete a specific subscription on a given node.
+
+    ### Update Service Configurable Parameters
+
+    #### GET /params
+
+    Fetch a JSON-formatted list of current configurable parameters.
+
+    #### PATCH /params
+
+    Change the value of one or more configurable parameters.
+     
+  version: "2.0.0-oas3"
+  title: HMS Notification Fanout Daemon
+tags:
+  - name: subscriptions
+    description: Used for managing State Change Notification subscriptions
+  - name: scn
+    description: >-
+      State change notification messages sent from Hardware State Manager to
+      HMNFD; the same format is used for notifications sent by HMNFD to
+      subscribers.
+servers:
+  - url: https://api-gw-service-nmn.local/apis/hmnfd/hmi/v2
+    description: Access to HMNFD from outside the Kubernetes service mesh
+  - url: http://cray-hmnfd/hmi/v2
+    description: Access to HMNFD from inside the Kubernetes service mesh
+paths:
+  /subscriptions:
+    get:
+      tags:
+        - subscriptions
+      summary: Retrieve currently-held state change notification subscriptions
+      description: >-
+        Retrieve all information on currently held State Change Notification
+        subscriptions.
+      operationId: doGetSubscriptionInfo
+      responses:
+        '200':
+          description: Success.  Currently held subscriptions are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionListArray'
+        '401':
+          description: >-
+            Unauthorized.  RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist. Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  For /subscriptions, only GET operations
+            are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+  '/subscriptions/{xname}':
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/XName.1.0.0'
+    get:
+      tags:
+        - subscriptions
+      summary: Retrieve currently-held state change notification subscriptions for a given component
+      description: >-
+        Retrieve currently held State Change Notification subscriptions for a component.
+      operationId: doGetSubscriptionInfoXName
+      responses:
+        '200':
+          description: Success.  Currently held subscriptions are returned.
+          content:
+            application/json:
+              schema:
+#                $ref: '#/components/schemas/SubscribePost' ###ZZZZ change this?
+                $ref: '#/components/schemas/SubscriptionListArray' ###ZZZZ change this?
+        '401':
+          description: >-
+            Unauthorized.  RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist. Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  For /subscriptions, only GET operations
+            are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+  /subscriptions/{xname}/agents:
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/XName.1.0.0'
+    delete:
+      tags:
+        - subscriptions
+      summary: Delete all state change notification subscriptions for a component
+      description: >-
+        Delete all state change notification subscriptions for a component.
+      operationId: doSubscriptionDeleteXName
+      responses:
+        '204':
+          description: Success.
+        '401':
+          description: >-
+            Unauthorized. RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  Only DELETE operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+  /subscriptions/{xname}/agents/{agent}:
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        description: The XName of the subscribing component (typically a node)
+        schema:
+#          $ref: '#/components/schemas/XName.1.0.0'
+          type: string
+          example: x1000c0s0b0n0
+      - in: path
+        name: agent
+        required: true
+        description: The software agent running on the subscribing component
+        schema:
+          type: string
+          example: scnHandler
+    post:
+      tags:
+        - subscriptions
+      summary: Subscribe to a state change notification
+      description: >-
+        Subscribe to state change notifications for a set of components. Once this is
+        done, the subscribing components will receive these notifications as they
+        occur, using the URL specified at subscription time.  The XName of the
+        subscribing component as well as the software agent doing the subscribing
+        are specified in the URL path.
+      operationId: doSubscriptionPOSTV2
+      requestBody:
+        $ref: '#/components/requestBodies/SubscribePostV2'
+      responses:
+        '204':
+          description: Success.
+        '400':
+          description: >-
+            Bad Request.  Malformed JSON.  Verify all JSON formatting in
+            payload, and that all xnames are properly formatted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '401':
+          description: >-
+            Unauthorized. RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  Only PATCH and DELETE
+            operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+    patch:
+      tags:
+        - subscriptions
+      summary: Modify a subscription to state change notifications
+      description: >-
+        Modify an existing subscription to state change notifications for a 
+        component and software agent.  The XName of the subscribing component 
+        as well as the software agent doing the subscribing are specified in 
+        the URL path.
+      operationId: doSubscriptionPATCHV2
+      requestBody:
+        $ref: '#/components/requestBodies/SubscribePostV2'
+      responses:
+        '204':
+          description: Success.
+        '400':
+          description: >-
+            Bad Request.  Malformed JSON.  Verify all JSON formatting in
+            payload, and that all xnames are properly formatted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '401':
+          description: >-
+            Unauthorized. RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  Only POST, PATCH and DELETE
+            operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+    delete:
+      tags:
+        - subscriptions
+      summary: Delete a specific state change notification subscription
+      description: >-
+        Delete a specific state change notification subscription associated 
+        with a target component and a target software agent.  The XName of the
+        subscribing component as well as the software agent on the subscribing 
+        component are specified in the URL path.
+      operationId: doSubscriptionDeleteXNameAgentV2
+      responses:
+        '204':
+          description: Success.
+        '401':
+          description: >-
+            Unauthorized. RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  Only PUT and DELETE operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+  /params:
+    get:
+      tags:
+        - params
+      summary: Retrieve service configurable parameters
+      description: Retrieve a JSON-formatted list of current configurable parameters.
+      operationId: doParamsGet
+      responses:
+        '200':
+          description: Success.  Current configurable parameter values are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/parameters'
+        '401':
+          description: >-
+            Unauthorized.  RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  For /params, only GET and PATCH operations
+            are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+    patch:
+      tags:
+        - params
+      summary: Update service configurable parameters
+      description: Change the value of one or more configurable parameters.
+      operationId: doParamsPatch
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: >-
+            Bad Request.  Malformed JSON.  Verify all JSON formatting in
+            payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '401':
+          description: >-
+            Unauthorized.  RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  For /params, only GET and PATCH operations
+            are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/parameters'
+        required: true
+
+  /health:
+    get:
+      tags:
+        - health
+      summary: Query the health of the service
+      description: >-
+        The `health` resource returns health information about the HMNFD service
+        and its dependencies.  This actively checks the connection between 
+        HMNFD and the following:
+          * KV Store
+          * Message Bus
+          * Worker Pool
+
+
+        This is primarily intended as a diagnostic tool to investigate the
+        functioning of the HMNFD service.
+      responses:
+        '200':
+          description: >-
+            [OK](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1)
+            Network API call success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  KvStore:
+                    description: Status of the KV Store.
+                    type: string
+                  MsgBus:
+                    description: Status of the connection with the message bus.
+                    type: string
+                  HsmSubscriptions:
+                    description: Status of the subscriptions to the Hardware State
+                      Manager (HSM).  Any error reported by an attempt to access
+                      the HSM subscriptions will be included here.
+                    type: string
+                  PruneMap:
+                    description: Status of the list of subscriptions to be pruned.
+                    type: string
+                  WorkerPool:
+                    description: Status of the worker pool servicing the notifications.
+                    type: string
+                example:
+                  KvStore: 'KV Store not initialized'
+                  MsgBus: 'Connected and OPEN'
+                  HsmSubscriptions: 'HSM Subscription key not present'
+                  PruneMap: 'Number of items:10'
+                  WorkerPool: 'Workers:5, Jobs:15'
+                required:
+                  - KvStore
+                  - MsgBus
+                  - HsmSubscriptions
+                  - PruneMap
+                  - WorkerPool
+        '405':
+          description: >-
+            Operation Not Permitted.  For /health, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /liveness:
+    get:
+      tags:
+        - health
+      summary: Kubernetes liveness endpoint to monitor service health
+      x-private: true
+      description: >-
+        The `liveness` resource works in conjunction with the Kubernetes liveness
+        probe to determine when the service is no longer responding to
+        requests.  Too many failures of the liveness probe will result in the
+        service being shut down and restarted.  
+
+
+        This is primarily an endpoint for the automated Kubernetes system.
+      responses:
+        '204':
+          description: >-
+            [No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '405':
+          description: >-
+            Operation Not Permitted.  For /liveness, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /readiness:
+    get:
+      tags:
+        - health
+      summary: Kubernetes readiness endpoint to monitor service health
+      x-private: true
+      description: >-
+        The `readiness` resource works in conjunction with the Kubernetes readiness
+        probe to determine when the service is no longer healthy and able to respond
+        correctly to requests.  Too many failures of the readiness probe will result
+        in the traffic being routed away from this service and eventually the service
+        will be shut down and restarted if in an unready state for too long.
+
+
+        This is primarily an endpoint for the automated Kubernetes system.
+      responses:
+        '204':
+          description: >-
+            [No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '405':
+          description: >-
+            Operation Not Permitted.  For /readiness, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /scn:
+    post:
+      tags:
+        - scn
+      summary: Send a state change notification
+      description: >-
+        Send a state change notification for fanout to subscribers. This is the API endpoint
+        for Hardware State Manager through which to send state change notifications.
+      operationId: doSCN
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: >-
+            Bad Request.  Malformed JSON.  Verify all JSON formatting in
+            payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '401':
+          description: >-
+            Unauthorized.  RBAC prevented operation from executing, or
+            authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '405':
+          description: >-
+            Operation Not Permitted.  For /scn, only POST operations are
+            allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: >-
+            Internal Server Error.  Unexpected condition encountered when
+            processing the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateChanges'
+        required: true
+components:
+  requestBodies:
+    SubscribePost:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SubscribePost'
+      required: true
+    SubscribePostV2:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SubscribePostV2'
+      required: true
+  schemas:
+    SubscribePost:
+      title: State Change Notification Subscription Message Payload
+      type: object
+      description: >-
+        This is the JSON payload that contains State Change Notification
+        subscription information.
+      properties:
+        Components:
+          description: >-
+            This is a list of components to associate with a State Change
+            Notification.
+          type: array
+          items:
+            $ref: '#/components/schemas/XName.1.0.0'
+        Subscriber:
+          description: >-
+            This is the xname of the subscriber. It can have an optional service
+            name.  Note that this is only used for backward compatibility with
+            the V1 API, and is not actually used.
+          type: string
+          example: scnHandler@x1000c1s2b0n3
+        SubscriberComponent:
+          description: >-
+            This is the xname of the subscriber. 
+          type: string
+          example: x1000c1s2b0n3
+        SubscriberAgent:
+          description: >-
+            This is the name of the subscribing software agent.
+          type: string
+          example: scnHandler
+        Enabled:
+          description: 'If true, subscribe to changes to the Enabled status of a component.'
+          type: boolean
+          example: 'true'
+        Roles:
+          description: Node role change to subscribe for
+          type: array
+          items:
+            $ref: '#/components/schemas/Roles.1.0.0'
+        SoftwareStatus:
+          description: Logical status associated with a component
+          type: array
+          items:
+            $ref: '#/components/schemas/SoftwareStatus.1.0.0'
+        States:
+          description: List of states to subscribe for
+          type: array
+          items:
+            $ref: '#/components/schemas/HMSState.1.0.0'
+        Url:
+          description: URL to send State Change Notifications to
+          type: string
+          example: 'https://x0c1s2b0n3.cray.com:8080/scns'
+    SubscribePostV2:
+      title: State Change Notification Subscription Message Payload
+      type: object
+      description: >-
+        This is the JSON payload that contains State Change Notification
+        subscription information.
+      properties:
+        Components:
+          description: >-
+            This is a list of components to associate with a State Change
+            Notification.
+          type: array
+          items:
+            $ref: '#/components/schemas/XName.1.0.0'
+        Enabled:
+          description: 'If true, subscribe to changes to the Enabled status of a component.'
+          type: boolean
+          example: 'true'
+        Roles:
+          description: Node role change to subscribe for
+          type: array
+          items:
+            $ref: '#/components/schemas/Roles.1.0.0'
+        SoftwareStatus:
+          description: Logical status associated with a component
+          type: array
+          items:
+            $ref: '#/components/schemas/SoftwareStatus.1.0.0'
+        States:
+          description: List of states to subscribe for
+          type: array
+          items:
+            $ref: '#/components/schemas/HMSState.1.0.0'
+        Url:
+          description: URL to send State Change Notifications to
+          type: string
+          example: 'https://x0c1s2b0n3.cray.com:8080/scns'
+    parameters:
+      title: Configurable Parameters Message Payload
+      type: object
+      description: >-
+        This is the JSON payload used for getting or setting configurable
+        parameters for this service.
+      properties:
+        Debug:
+          description: >-
+            This is the debug level of the heartbeat service. It increases the
+            verbosity of the logging.
+          type: integer
+          default: '0'
+          example: 0
+        KV_url:
+          description: ETCD Key-Value store URL
+          type: string
+          default: 'mem:'
+          example: 'http://localhost:2379'
+        Nosm:
+          description: Do not contact Hardware State Manager (for testing/debug)
+          type: integer
+          default: '0'
+          example: 1
+        Port:
+          description: Port number to respond to
+          type: integer
+          default: '28600'
+          example: 27000
+        Scn_cache_delay:
+          description: >-
+            Max number seconds before sending cached and coalesced SCNs to
+            subscribers.
+          type: integer
+          default: '5'
+          example: 5
+        Scn_max_cache:
+          description: >-
+            Max number of similar SCNs to cache and coalesce before sending to 
+            subscribers.
+          type: integer
+          default: '100'
+          example: 100
+        SM_retries:
+          description: >-
+            Number of times to retry operations with Hardware State Manager on
+            failure
+          type: integer
+          default: '3'
+          example: 3
+        SM_timeout:
+          description: >-
+            Number of seconds to wait before giving up when communicating with
+            Hardware State Manager
+          type: integer
+          default: '10'
+          example: 5
+        SM_url:
+          description: URL used when contacting the Hardware State Manager
+          type: string
+          default: 'https://localhost:27999/hsm/v1'
+          example: 'https://localhost:27999/hsms/v1'
+        Telemetry_host:
+          description: >-
+            URL used when contacting the telemetry bus.  Contains service URL,
+            port, and bus topic.
+          type: string
+          example: 'kafka.sma.svc.cluster.local:9092:state_change_notifications'
+        Use_telemetry:
+          description: >-
+            Specifies whether or not to dump State Change Notifications onto the
+            telemetry bus
+          type: integer
+          default: 0
+          example: 1
+    XName.1.0.0:
+      description: >-
+        Identifies sender by xname. This is the physical, location-based name of
+        a component.
+      type: string
+      example: x0c1s2b0n3
+    HMSState.1.0.0:
+      description: This property indicates the state of the underlying component.
+      enum:
+        - Unknown
+        - Empty
+        - Populated
+        - 'Off'
+        - 'On'
+        - Active
+        - Standby
+        - Halt
+        - Ready
+        - Paused
+      type: string
+      example: Ready
+    SoftwareStatus.1.0.0:
+      description: This property indicates a logical state of the underlying component.
+      enum:
+        - Unknown
+        - AdminDown
+        - Others
+      example: AdminDown
+    Roles.1.0.0:
+      description: >-
+        This property indicates a node's role -- compute, service, uan, ssn, and
+        others
+      enum:
+        - Compute
+        - System
+        - Application
+        - Storage
+        - Management
+      example: Compute
+    StateChanges:
+      description: >-
+        This is the JSON payload that contains State Change Notification
+        information, sent by the Hardware State Manager
+      properties:
+        Components:
+          description: >-
+            This is a list of components to associate with a State Change
+            Notification
+          type: array
+          items:
+            $ref: '#/components/schemas/XName.1.0.0'
+        Enabled:
+          description: >-
+            If true, component has changed to the Enabled state; if false, it
+            has changed to the Disabled state.
+          type: boolean
+          example: 'true'
+        Role:
+          $ref: '#/components/schemas/Roles.1.0.0'
+        SoftwareStatus:
+          $ref: '#/components/schemas/SoftwareStatus.1.0.0'
+        State:
+          $ref: '#/components/schemas/HMSState.1.0.0'
+    SubscriptionUrl:
+      description: URL to send State Change Notifications to
+      type: string
+      example: 'https://x0c1s2b0n3.cray.com:7999/scn'
+    SubscriptionListArray:
+      description: List of all currently held State Change Notification subscriptions.
+      properties:
+        SubscriptionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribePost'
+    Problem7807:
+      description: >-
+        RFC 7807 compliant error payload.  All fields are optional except the
+        'type' field.
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          example: 'about:blank'
+        detail:
+          type: string
+          example: Detail about this specific problem occurrence. See RFC7807
+        instance:
+          type: string
+          example: ''
+        status:
+          type: number
+          format: int32
+          example: 400
+        title:
+          type: string
+          example: 'Description of HTTP Status code, e.g. 400'

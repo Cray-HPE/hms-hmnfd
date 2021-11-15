@@ -69,7 +69,6 @@ func TestScnSubscribeHandler(t *testing.T) {
 	var kvval SubData
 
 	disable_logs()
-	hstuff := new(httpStuff)
 
 	//Set up ETCD
 
@@ -98,16 +97,7 @@ func TestScnSubscribeHandler(t *testing.T) {
 		t.Fatal(err1)
 	}
 	rr1 := httptest.NewRecorder()
-	handler1 := http.HandlerFunc(hstuff.scnSubscribeHandler)
-
-	req2_payload := bytes.NewBufferString("")
-	req2, err2 := http.NewRequest("GET", "http://localhost:8080/hmnfd/v1/subscribe",
-		req2_payload)
-	if err2 != nil {
-		t.Fatal(err2)
-	}
-	rr2 := httptest.NewRecorder()
-	handler2 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler1 := http.HandlerFunc(doSubscribePost)
 
 	bs3 := fmt.Sprintf("{\"Subscriber\":\"%s\",\"Url\":\"%s\"}",
 		subid, url)
@@ -118,7 +108,7 @@ func TestScnSubscribeHandler(t *testing.T) {
 		t.Fatal(err3)
 	}
 	rr3 := httptest.NewRecorder()
-	handler3 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler3 := http.HandlerFunc(doSubscribeDelete)
 
 	subkey4 := "sub#x0c1s2b0n3#hs.off#svc.handler"
 	comp4_1 := "x2000c2s2b0n2"
@@ -133,13 +123,13 @@ func TestScnSubscribeHandler(t *testing.T) {
 		t.Fatal(err4)
 	}
 	rr4 := httptest.NewRecorder()
-	handler4 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler4 := http.HandlerFunc(doSubscribePatch)
 
 	//Mock up the POST operation
 
 	handler1.ServeHTTP(rr1, req1)
 	if rr1.Code != http.StatusOK {
-		t.Errorf("HTTP handler 'scnSubscribeHandler' returned bad error code, got %v, want %v\n",
+		t.Errorf("HTTP handler 'doSubscribePatch' returned bad error code, got %v, want %v\n",
 			rr1.Code, http.StatusOK)
 	}
 
@@ -178,7 +168,7 @@ func TestScnSubscribeHandler(t *testing.T) {
 
 	handler4.ServeHTTP(rr4, req4)
 	if rr4.Code != http.StatusOK {
-		t.Errorf("HTTP handler 'scnSubscribeHandler' returned bad error code, got %v, want %v\n",
+		t.Errorf("HTTP handler 'doSubscribePatch' returned bad error code, got %v, want %v\n",
 			rr4.Code, http.StatusOK)
 	}
 
@@ -217,7 +207,7 @@ func TestScnSubscribeHandler(t *testing.T) {
 
 	handler3.ServeHTTP(rr3, req3)
 	if rr3.Code != http.StatusOK {
-		t.Errorf("HTTP handler 'scnSubscribeHandler' returned bad error code, got %v, want %v\n",
+		t.Errorf("HTTP handler 'doSubscribeDelete' returned bad error code, got %v, want %v\n",
 			rr3.Code, http.StatusOK)
 	}
 
@@ -237,14 +227,6 @@ func TestScnSubscribeHandler(t *testing.T) {
 	if kok {
 		t.Errorf("KV key '%s' still exists, should have been deleted.\n", subkey4)
 	}
-
-	//Mock up a GET operation, should fail, not supported
-
-	handler2.ServeHTTP(rr2, req2)
-	if rr2.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Disallowed GET operation didn't fail, got response code %v\n",
-			rr2.Code)
-	}
 }
 
 func TestScnHandler(t *testing.T) {
@@ -261,7 +243,6 @@ func TestScnHandler(t *testing.T) {
 		go handleSCNs()
 		go checkSCNCache()
 	}
-	hstuff := new(httpStuff)
 
 	//Shortcut: create ETCD entries for subscriptions.  Use "" for URLs in
 	//those subscriptions, so that the scn_rcv() function won't try to send
@@ -305,7 +286,7 @@ func TestScnHandler(t *testing.T) {
 		t.Fatal(err1)
 	}
 	rr1 := httptest.NewRecorder()
-	handler1 := http.HandlerFunc(hstuff.scnHandler)
+	handler1 := http.HandlerFunc(scnHandler)
 	handler1.ServeHTTP(rr1, req1)
 	if rr1.Code != http.StatusOK {
 		t.Errorf("POST operation failed, got response code %v\n", rr1.Code)
@@ -320,7 +301,7 @@ func TestScnHandler(t *testing.T) {
 		t.Fatal(err2)
 	}
 	rr2 := httptest.NewRecorder()
-	handler2 := http.HandlerFunc(hstuff.scnHandler)
+	handler2 := http.HandlerFunc(scnHandler)
 	handler2.ServeHTTP(rr2, req2)
 	if rr2.Code == http.StatusOK {
 		t.Errorf("Disallowed PATCH operation didn't fail, got response code %v\n",
@@ -334,7 +315,7 @@ func TestScnHandler(t *testing.T) {
 		t.Fatal(err3)
 	}
 	rr3 := httptest.NewRecorder()
-	handler3 := http.HandlerFunc(hstuff.scnHandler)
+	handler3 := http.HandlerFunc(scnHandler)
 	handler3.ServeHTTP(rr3, req3)
 	if rr3.Code == http.StatusOK {
 		t.Errorf("Disallowed GET operation didn't fail, got response code %v\n",
@@ -348,7 +329,7 @@ func TestScnHandler(t *testing.T) {
 		t.Fatal(err4)
 	}
 	rr4 := httptest.NewRecorder()
-	handler4 := http.HandlerFunc(hstuff.scnHandler)
+	handler4 := http.HandlerFunc(scnHandler)
 	handler4.ServeHTTP(rr4, req4)
 	if rr4.Code == http.StatusOK {
 		t.Errorf("Disallowed DELETE operation didn't fail, got response code %v\n",
@@ -415,7 +396,6 @@ func scnCompare(sent,rcv []Scn) string {
 }
 
 func sendScn(t *testing.T, hsmscn Scn) {
-	hstuff := new(httpStuff)
 	ba, baerr := json.Marshal(hsmscn)
 	if baerr != nil {
 		t.Fatal("Error marshalling JSON.")
@@ -427,7 +407,7 @@ func sendScn(t *testing.T, hsmscn Scn) {
 		t.Fatal(err1)
 	}
 	rr1 := httptest.NewRecorder()
-	handler1 := http.HandlerFunc(hstuff.scnHandler)
+	handler1 := http.HandlerFunc(scnHandler)
 	handler1.ServeHTTP(rr1, req1)
 	if rr1.Code != http.StatusOK {
 		t.Errorf("POST operation failed, got response code %v\n", rr1.Code)
@@ -580,7 +560,6 @@ func TestSubscriptionsHandler(t *testing.T) {
 	var subdata, subdata2 SubData
 
 	disable_logs()
-	hstuff := new(httpStuff)
 
 	//Shortcut: stuff the ETCD KV with subscriptions, then use the func to
 	//read them out.
@@ -623,7 +602,7 @@ func TestSubscriptionsHandler(t *testing.T) {
 		t.Fatal(err1)
 	}
 	rr1 := httptest.NewRecorder()
-	handler1 := http.HandlerFunc(hstuff.subscriptionsHandler)
+	handler1 := http.HandlerFunc(subscriptionsHandler)
 	handler1.ServeHTTP(rr1, req1)
 	if rr1.Code != http.StatusOK {
 		t.Fatal("ERROR, GET request for subscriptions failed:", rr1.Code)
@@ -747,7 +726,7 @@ func TestSubscriptionsHandler(t *testing.T) {
 		t.Fatal(err2)
 	}
 	rr2 := httptest.NewRecorder()
-	handler2 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler2 := http.HandlerFunc(doSubscribeDelete)
 	handler2.ServeHTTP(rr2, req2)
 	if rr2.Code == http.StatusOK {
 		t.Errorf("Disallowed DELETE operation didn't fail, got response code %v\n",
@@ -761,7 +740,7 @@ func TestSubscriptionsHandler(t *testing.T) {
 		t.Fatal(err3)
 	}
 	rr3 := httptest.NewRecorder()
-	handler3 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler3 := http.HandlerFunc(doSubscribePost)
 	handler3.ServeHTTP(rr3, req3)
 	if rr3.Code == http.StatusOK {
 		t.Errorf("Disallowed POST operation didn't fail, got response code %v\n",
@@ -775,7 +754,7 @@ func TestSubscriptionsHandler(t *testing.T) {
 		t.Fatal(err4)
 	}
 	rr4 := httptest.NewRecorder()
-	handler4 := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler4 := http.HandlerFunc(doSubscribePatch)
 	handler4.ServeHTTP(rr4, req4)
 	if rr4.Code == http.StatusOK {
 		t.Errorf("Disallowed PATCH operation didn't fail, got response code %v\n",
@@ -790,7 +769,6 @@ func TestPrune(t *testing.T) {
 	var hmscn Scn
 
 	disable_logs()
-	hstuff := new(httpStuff)
 
 	//Make sure the pruning loop is running.
 	go prune()
@@ -856,11 +834,11 @@ func TestPrune(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(hstuff.scnSubscribeHandler)
+	handler := http.HandlerFunc(doSubscribeDelete)
 
 	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
-		t.Errorf("HTTP handler 'scnSubscribeHandler' returned bad error code, got %v, want %v\n",
+		t.Errorf("HTTP handler 'doSubscribeDelete' returned bad error code, got %v, want %v\n",
 			rr.Code, http.StatusOK)
 	}
 
@@ -898,7 +876,7 @@ func TestPrune(t *testing.T) {
 	}
 
 	rr2 := httptest.NewRecorder()
-	handler2 := http.HandlerFunc(hstuff.scnHandler)
+	handler2 := http.HandlerFunc(scnHandler)
 	handler2.ServeHTTP(rr2, req2)
 	if rr2.Code != http.StatusOK {
 		t.Errorf("POST operation failed, got response bode %v\n", rr2.Code)

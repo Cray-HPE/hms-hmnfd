@@ -23,6 +23,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"flag"
@@ -30,10 +31,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/Cray-HPE/hms-base"
@@ -44,10 +47,6 @@ import (
 /////////////////////////////////////////////////////////////////////////////
 // Data Structures
 /////////////////////////////////////////////////////////////////////////////
-
-type httpStuff struct {
-	stuff string
-}
 
 // Fanout service URL segment description.
 
@@ -105,7 +104,8 @@ const (
 	URL_APPNAME       = "hmnfd"
 	URL_PREFIX        = "https://"
 	URL_BASE          = "hmi"
-	URL_VERSION       = "v1"
+	URL_V1            = "v1"
+	URL_V2            = "v2"
 	URL_PORT          = 28600
 	URL_SCN           = "scn"
 	URL_SUBSCRIBE     = "subscribe"
@@ -151,6 +151,8 @@ var hsmsub_chan = make(chan ScnSubscribe, 50000)
 var scnWorkPool *base.WorkerPool
 var fanoutSyncMode int = 0
 var htrans httpTrans
+var Running = true
+var featureFlag_xnameApiEnable int
 
 var app_params = opParams{
 	Debug:           0,
@@ -173,7 +175,7 @@ var app_params = opParams{
 var server_url = urlDesc{url_prefix: URL_PREFIX, //https://
 	url_root:    URL_BASE,    //hmnfd
 	url_port:    URL_PORT,    //28600
-	url_version: URL_VERSION, //v1
+	url_version: URL_V2,      //v2
 	hostname:    "",
 	fdqn:        "",
 	full_url:    "",
@@ -408,6 +410,10 @@ func parseEnvVars() {
 	__env_parse_string("HMNFD_SM_URL", &app_params.SM_url)
 	__env_parse_string("HMNFD_TELEMETRY_HOST", &app_params.Telemetry_host)
 	__env_parse_int("HMNFD_USE_TELEMETRY", &app_params.Use_telemetry)
+
+	//Feature flags
+
+	__env_parse_int("HMNFD_FEATURE_XNAME_API",&featureFlag_xnameApiEnable)
 
 	//This one is undocumented and used for testing
 
@@ -857,46 +863,58 @@ func main() {
 
 	subscribeMandatoryScn()
 
-	log.Printf("Listening on port %d\n", server_url.url_port)
+	log.Printf("Listening on port %d", server_url.url_port)
+	log.Printf("URLs:")
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_SUBSCRIBE)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_SCN)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_SUBSCRIPTIONS)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_PARAMS)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_LIVENESS)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_READINESS)
+	log.Printf("    %s",URL_DELIM + server_url.url_root +
+		URL_DELIM + server_url.url_version +
+		URL_DELIM + URL_HEALTH)
 
-	subscribe_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SUBSCRIBE
-	scn_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SCN
-	subscriptions_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SUBSCRIPTIONS
-	params_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_PARAMS
-	liveness_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_LIVENESS
-	readiness_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_READINESS
-	health_url := URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_HEALTH
+	routes := generateRoutes()
+	router := newRouter(routes)
 
-	hstuff := new(httpStuff)
+	port := fmt.Sprintf(":%d",server_url.url_port)
+	srv := &http.Server{Addr: port, Handler: router}
 
-	log.Printf("URLs: %s\n      %s\n      %s\n      %s\n",
-		subscribe_url, scn_url, subscriptions_url, params_url)
+	//Set up signal handling for graceful kill
 
-	http.HandleFunc(subscribe_url, hstuff.scnSubscribeHandler)
-	http.HandleFunc(scn_url, hstuff.scnHandler)
-	http.HandleFunc(subscriptions_url, hstuff.subscriptionsHandler)
-	http.HandleFunc(params_url, hstuff.paramsHandler)
-	http.HandleFunc(liveness_url, hstuff.livenessHandler)
-	http.HandleFunc(readiness_url, hstuff.readinessHandler)
-	http.HandleFunc(health_url, hstuff.healthHandler)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	idleConnsClosed := make(chan struct{})
 
-	laserr := http.ListenAndServe(fmt.Sprintf(":%d", server_url.url_port), nil)
-	if laserr != nil {
-		log.Println("ListenAndServe error:", laserr)
+	go func() {
+		<-c
+		Running = false
+
+		//Gracefully shutdown the HTTP server
+		lerr := srv.Shutdown(context.Background())
+		if lerr != nil {
+			log.Printf("HTTP server shutdown error: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
+
+	log.Printf("Starting  up HTTP server.")
+	err = srv.ListenAndServe()
+	if err != http.ErrServerClosed {
+		log.Printf("FATAL: HTTP server ListenandServe failed: %v", err)
 	}
 
 	os.Exit(0)

@@ -35,6 +35,9 @@ info:
 
     * Create state change notifications for distribution to subscribers
 
+    ## Deprecation Notice: V1 of the HMS service has been deprecated as of CSM version 1.2.0. 
+    The V1 HMNFD API’s will be removed in the CSM version 1.5 release.
+    All consumers of the V1 HMNFD API interface will need to move to the V2 interface prior to the CSM 1.5 release.
 
     ## Resources
 
@@ -114,6 +117,11 @@ tags:
       State change notification messages sent from Hardware State Manager to
       HMNFD; the same format is used for notifications sent by HMNFD to
       subscribers.
+servers:
+  - url: http://cray-hmnfd/hmi/v1
+    description: Access URL when you are inside the service mesh
+  - url: https://api-gw-service-nmn.local/hmnfd/hmi/v1
+    description: Access URL when you are outside the service mesh
 paths:
   /subscribe:
     post:
@@ -731,11 +739,6 @@ paths:
             schema:
               $ref: '#/components/schemas/StateChanges'
         required: true
-servers:
-  - url: http://cray-hmnfd/hmi/v1
-    description: Access URL when you are inside the service mesh
-  - url: https://api-gw-service-nmn.local/hmnfd/hmi/v1
-    description: Access URL when you are outside the service mesh
 components:
   requestBodies:
     SubscribePost:
