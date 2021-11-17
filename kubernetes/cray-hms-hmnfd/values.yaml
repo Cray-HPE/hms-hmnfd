@@ -7,6 +7,10 @@
 #   tag: "" (default = "latest")
 #   pullPolicy: "" (default = "IfNotPresent")
 
+image:
+  repository: artifactory.algol60.net/csm-docker/stable/cray-hmnfd
+  pullPolicy: IfNotPresent
+
 cray-service:
   type: "Deployment"
   nameOverride: "cray-hmnfd"
@@ -25,7 +29,8 @@ cray-service:
     cray-hmnfd:
       name: "cray-hmnfd"
       image:
-        repository: "cray/cray-hmnfd"
+        repository: "artifactory.algol60.net/csm-docker/stable/cray-hmnfd"
+        tag: "1.13.0"
       ports:
         - name: http
           containerPort: 28600
@@ -37,8 +42,8 @@ cray-service:
         # Remove this to have hmnfd use ETCD.  The etcd operator will
         # provide the hmnfd container with ETCD_HOST and ETCD_PORT to
         # allow it to determine the KV URL.
-        #- name: KV_URL
-        #  value: "mem:"
+        # - name: KV_URL
+        #   value: "mem:"
       livenessProbe:
         httpGet:
           port: 28600

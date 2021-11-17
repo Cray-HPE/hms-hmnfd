@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.13.0] - 2021-11-17
+
+### Changed
+
+- Changed helm image refs to artifactory.algol60.net
+
 ## [1.12.0] - 2021-11-09
 
 ### Changed
