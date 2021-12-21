@@ -31,7 +31,7 @@ RUN go env -w GO111MODULE=auto
 
 COPY Test/fake-hsm/fake-hsm.go ${GOPATH}/src/fake-hsm/
 
-RUN set -ex && go build -v -i -o /usr/local/bin/fake-hsm fake-hsm
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-hsm fake-hsm
 
 ### Final Stage ###
 

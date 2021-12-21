@@ -63,6 +63,17 @@ Configuration data and constants:
 METHODS:
 
 /////////////////////////////////////////////////////////////////////////////
+// Swap out default logger with a different instance of a Logrus logger.
+// Library will use default logger if this function is never called.
+//
+// loggerP(in): New logger to use
+// Return:      None.
+/////////////////////////////////////////////////////////////////////////////
+
+SetLogger(loggerP *logrus.Logger)
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Connect to a message bus.  This function is not part of the interface,
 // but will return the correct struct for the given interface.
 //
@@ -310,6 +321,10 @@ NOTES:
  o Trying to use a callback function and MessageAvailable() and MessageRead()
    will result in undefined behavior.
 
+BUILD NOTES:
 
+ o Any microservice using hms-msgbus starting at version 1.11.0 needs to
+   use '-tags musl' in any 'go build' or 'go test' instruction, which
+   will affect Dockerfiles.
 
 

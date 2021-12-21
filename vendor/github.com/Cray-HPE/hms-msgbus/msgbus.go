@@ -24,10 +24,15 @@ package msgbus
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
-	"github.com/bsm/sarama-cluster"
+	"os"
+	"os/signal"
+	"syscall"
 	"strconv"
+	"sync"
 	"time"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/sirupsen/logrus"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -102,22 +107,20 @@ type MsgBusConfig struct {
 type MsgBusWriter_Kafka struct {
 	kafkaHost       string
 	kafkaPort       int
-	kafkaConfig     *sarama.Config
-	kafkaBProducer  *sarama.SyncProducer
-	kafkaNBProducer *sarama.AsyncProducer
+	kafkaProducer   *kafka.Producer
 	kafkaTopic      string
 
 	//the following need to be in each msgbus type
 	blocking       BlockingMode
 	status         BusStatus
 	connectRetries int
+	handleLock     *sync.Mutex
 }
 
 type MsgBusReader_Kafka struct {
 	kafkaHost     string
 	kafkaPort     int
-	kafkaConfig   *cluster.Config
-	kafkaConsumer *cluster.Consumer
+	kafkaConsumer *kafka.Consumer
 	kafkaTopic    string
 	kafkaGroupId  string
 	cbfunc        CBFunc
@@ -127,14 +130,30 @@ type MsgBusReader_Kafka struct {
 	blocking       BlockingMode
 	status         BusStatus
 	connectRetries int
+	handleLock     *sync.Mutex
 }
 
 // Other bus descriptors as they arise...
+
+var logger = logrus.New()
 
 //testing stuff
 
 var __testmode bool = false
 var __read_inject string
+
+
+/****************************************************************************
+ *           G E N E R A L  F U N C T I O N S
+ ***************************************************************************/
+
+func SetLogger(loggerP *logrus.Logger) {
+	if (loggerP != nil) {
+		logger = loggerP
+	} else {
+		logger = logrus.New()
+	}
+}
 
 /****************************************************************************
              K A F K A  B U S  F U N C T I O N S
@@ -167,30 +186,42 @@ func (mbus *MsgBusWriter_Kafka) Status() int {
 func (mbus *MsgBusWriter_Kafka) MessageWrite(msg string) error {
 	var err error = nil
 
-	if mbus.status != StatusOpen {
+	mbus.handleLock.Lock()
+	defer mbus.handleLock.Unlock()
+
+	if (mbus.status != StatusOpen) {
 		err = fmt.Errorf("ERROR: Attempting MessageWrite() on a closed connection.")
 		return err
 	}
 
-	kmsg := &sarama.ProducerMessage{Topic: mbus.kafkaTopic,
-		Value:     sarama.StringEncoder(msg),
-		Timestamp: time.Now(),
+	if (__testmode) {
+		logger.Infof("TestMode: Sending message: %s",msg)
+		return nil
 	}
 
-	if __testmode {
-		fmt.Println("TestMode: Sending message:", kmsg)
-	} else {
-		if mbus.blocking == NonBlocking {
-			(*mbus.kafkaNBProducer).Input() <- kmsg
-			select {
-			case err := <-(*mbus.kafkaNBProducer).Errors():
-				fmt.Println("ERROR on async write channel:", err)
-			default:
-				err = nil
-			}
+	if (mbus.blocking == Blocking) {
+		deliveryChan := make(chan kafka.Event)
+
+		err = mbus.kafkaProducer.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &mbus.kafkaTopic, Partition: kafka.PartitionAny},
+			Value:          []byte(msg),
+		}, deliveryChan)
+
+		e := <-deliveryChan
+		m := e.(*kafka.Message)
+
+		if m.TopicPartition.Error != nil {
+			logger.Errorf("Kafka message delivery failed: %v\n", m.TopicPartition.Error)
 		} else {
-			_, _, err = (*mbus.kafkaBProducer).SendMessage(kmsg)
+			logger.Infof("Delivered message to topic %s [%d] at offset %v\n",
+				*m.TopicPartition.Topic, m.TopicPartition.Partition,
+				m.TopicPartition.Offset)
 		}
+
+		close(deliveryChan)
+	} else {
+		//Writes message into kafka lib's Q.
+		mbus.kafkaProducer.ProduceChannel() <- &kafka.Message{TopicPartition: kafka.TopicPartition{Topic: &mbus.kafkaTopic, Partition: kafka.PartitionAny}, Value: []byte(msg)}
 	}
 
 	return err
@@ -204,11 +235,12 @@ func (mbus *MsgBusWriter_Kafka) MessageWrite(msg string) error {
 /////////////////////////////////////////////////////////////////////////////
 
 func (mbus *MsgBusWriter_Kafka) Disconnect() error {
+	mbus.handleLock.Lock()
+	defer mbus.handleLock.Unlock()
+
 	if !__testmode {
-		if mbus.blocking == NonBlocking {
-			(*mbus.kafkaNBProducer).Close()
-		} else {
-			(*mbus.kafkaBProducer).Close()
+		if ((mbus != nil) && (mbus.kafkaProducer != nil)) {
+			mbus.kafkaProducer.Close()
 		}
 	}
 	mbus.status = StatusClosed
@@ -247,7 +279,7 @@ func (mbus *MsgBusWriter_Kafka) UnregisterCB() error {
 /////////////////////////////////////////////////////////////////////////////
 
 func (mbus *MsgBusWriter_Kafka) MessageAvailable() int {
-	fmt.Print("ERROR: MessageAvailable() not implemented for Writer interface.")
+	logger.Errorf("ERROR: MessageAvailable() not implemented for Writer interface.")
 	return 0
 }
 
@@ -273,6 +305,9 @@ func (mbus *MsgBusWriter_Kafka) MessageRead() (string, error) {
 /////////////////////////////////////////////////////////////////////////////
 
 func (mbus *MsgBusReader_Kafka) Disconnect() error {
+	mbus.handleLock.Lock()
+	defer mbus.handleLock.Unlock()
+
 	mbus.status = StatusClosed
 	if !__testmode {
 		(*mbus.kafkaConsumer).Close()
@@ -330,6 +365,9 @@ func (mbus *MsgBusReader_Kafka) UnregisterCB() error {
 /////////////////////////////////////////////////////////////////////////////
 
 func (mbus *MsgBusReader_Kafka) MessageAvailable() int {
+	if (mbus.status == StatusClosed) {
+		return 0
+	}
 	return len(mbus.readQ)
 }
 
@@ -345,59 +383,125 @@ func (mbus *MsgBusReader_Kafka) MessageAvailable() int {
 // Return:    None.
 /////////////////////////////////////////////////////////////////////////////
 
-func ReaderThread_Kafka(mbusP *MsgBusReader_Kafka) {
-	var msg *sarama.ConsumerMessage
-	var err error
-	var ok bool
+func readerThread_Kafka(mbusP *MsgBusReader_Kafka) {
+	var msg string
+	var ev kafka.Event
+
+	ok := true
+	sigchan := make(chan os.Signal,1)
+	signal.Notify(sigchan,syscall.SIGINT,syscall.SIGTERM)
 
 	for {
-		err = nil
-		if mbusP.status == StatusClosed {
+		//Catch signals, and don't block
+		select {
+			case sig := <-sigchan:
+				logger.Infof("Caught signal %v: terminating kafka read thread.",sig)
+				mbusP.handleLock.Lock()
+				mbusP.status = StatusClosed
+				mbusP.handleLock.Unlock()
+				ok = false
+			default:
+				_ = 1
+		}
+
+		msg = ""
+		if (mbusP.status == StatusClosed) {
 			break
 		}
 
 		if __testmode {
-			msg = &sarama.ConsumerMessage{Key: []byte("TestKey"),
-				Value:     []byte(__read_inject),
-				Topic:     "TestTopic",
-				Partition: 0,
-				Offset:    1234}
+			msg = __read_inject
 			time.Sleep(time.Millisecond * 10)
 			if __read_inject == "" {
 				ok = false
+			}
+		} else {
+			logger.Tracef("About to poll...")
+			mbusP.handleLock.Lock()
+			if (mbusP.status != StatusClosed) {
+				//Only wait a short time, then check, to prevent un-killable
+				//hang.
+				ev = mbusP.kafkaConsumer.Poll(500)	//block until message ready
+			}
+			mbusP.handleLock.Unlock()
+			logger.Tracef("After poll.")
+			if (ev == nil) {
+				//Poll expired, nothing to do
+				continue
+			}
+
+			switch e := ev.(type) {
+				case *kafka.Message:
+					msg = string(e.Value)
+
+				case *kafka.Error:
+					logger.Errorf("ERROR reading from kafka consumer: %v: %v",
+						e.Code(), e)
+					if (e.Code() == kafka.ErrAllBrokersDown) {
+						//lost connection, go away
+						ok = false
+					}
+
+				default:
+					logger.Infof("Kafka poll() info: %v",e)
+			}
+		}
+
+		if (!ok) {
+			break
+		}
+		if (msg != "") {
+			if (mbusP.cbfunc != nil) {
+				mbusP.cbfunc(msg)
 			} else {
-				ok = true
+				mbusP.readQ <- msg
 			}
-		} else {
-			msg, ok = <-(*mbusP.kafkaConsumer).Messages()
-			select {
-			case cerr := <-(*mbusP.kafkaConsumer).Errors():
-				err = fmt.Errorf("%s", cerr.Error())
-				fmt.Println("ERROR reading consumer channel:", err)
-			default:
-				err = nil
-			}
-		}
-		if !ok {
-			break //channel went away, time to die
-		}
-
-		if err != nil {
-			continue
-		}
-
-		if mbusP.cbfunc != nil {
-			mbusP.cbfunc(string(msg.Value))
-		} else {
-			if !__testmode {
-				(*mbusP.kafkaConsumer).MarkOffset(msg, "ok")
-			}
-
-			mbusP.readQ <- string(msg.Value)
 		}
 	}
 	close(mbusP.readQ)
 }
+
+//This thread only reports event info, has nothing to do with message
+//delivery.
+
+func writerThread_Kafka(mbusP *MsgBusWriter_Kafka) {
+	for {
+		mbusP.handleLock.Lock()
+		if (mbusP.status == StatusClosed) {
+			mbusP.handleLock.Unlock()
+			return
+		}
+		evChan := mbusP.kafkaProducer.Events()
+		mbusP.handleLock.Unlock()
+		e,isOpen := <-evChan
+		if (!isOpen) {
+			logger.Infof("Closing writer thread, producer event chan is closed.")
+			return
+		}
+
+		logger.Tracef("Got writer event: %v",e)
+
+		switch ev := e.(type) {
+			case *kafka.Message:
+				m := ev
+				if m.TopicPartition.Error != nil {
+					logger.Errorf("Kafka message delivery failed: key: '%s', topic: '%s', partition: %d, error: %v",
+						string(m.Key),
+						*m.TopicPartition.Topic,
+						m.TopicPartition.Partition,
+						m.TopicPartition.Error)
+				} else {
+					logger.Tracef("Kafka delivered message to topic %s [%d] at offset %v",
+						*m.TopicPartition.Topic, m.TopicPartition.Partition,
+						m.TopicPartition.Offset)
+				}
+
+			default:
+				logger.Tracef("Kafka producer: Ignored event: %s", ev)
+		}
+	}
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Interface method to return the next message available on a reader.  There
@@ -419,8 +523,16 @@ func (mbus *MsgBusReader_Kafka) MessageRead() (string, error) {
 	//there is no $%#!! way to check message availability with this interface.
 	//Thus, we have to use a goroutine to slurp the messages off and queue
 	//them up, then check the chan for availability.
+	//
+	//Note that if the chan is closed that means the reader thread is gone.
+	//Reading this chan will always return an empty string, and will never
+	//block.
 
-	msg := <-mbus.readQ
+	msg := ""
+	if (mbus.status != StatusClosed) {
+		msg = <-mbus.readQ
+	}
+
 	return msg, nil
 }
 
@@ -438,7 +550,7 @@ func (mbus *MsgBusReader_Kafka) MessageWrite(msg string) error {
 
 /////////////////////////////////////////////////////////////////////////////
 // Convenience function to open a Kafka bus writer connection.  This was
-// separated out from the ConnectWriter_Kafka() function to facilitate any
+// separated out from the connectWriter_Kafka() function to facilitate any
 // future re-connect logic.
 //
 // kbus(in): Pointer to a Kafka writer descriptor.
@@ -449,64 +561,35 @@ func connect_kafka_w(kbus *MsgBusWriter_Kafka) error {
 	var err error = nil
 	var ntry int
 
-	brokers := []string{kbus.kafkaHost + ":" + strconv.Itoa(kbus.kafkaPort)}
+	broker := kbus.kafkaHost + ":" + strconv.Itoa(kbus.kafkaPort)
 
-	if kbus.blocking == Blocking {
-		var producer sarama.SyncProducer
-
-		//Needed for sync producer
-		kbus.kafkaConfig.Producer.Return.Successes = true
-		kbus.kafkaConfig.Producer.Return.Errors = true
-
-		for ntry = 0; ntry < kbus.connectRetries; ntry++ {
-			if !__testmode {
-				producer, err = sarama.NewSyncProducer(brokers, kbus.kafkaConfig)
-			} else {
-				err = nil
-			}
-			if err != nil {
-				fmt.Println("ERROR: Unable to connect to Kafka! Trying again in 1 second...",
-					err)
-				time.Sleep(1 * time.Second)
-			} else {
-				break
-			}
+	for ntry = 0; ntry < kbus.connectRetries; ntry++ {
+		if !__testmode {
+			kbus.kafkaProducer,err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": broker})
+		} else {
+			err = nil
 		}
-		if ntry >= kbus.connectRetries {
-			err = fmt.Errorf("ERROR, exhausted retry count (%d), cannot connect to Kafka bus.\n",
-				kbus.connectRetries)
-			return err
+		if (err != nil) {
+			logger.Errorf("ERROR: Unable to connect to Kafka: %v Trying again in 1 second...",
+				err)
+			time.Sleep(1 * time.Second)
+		} else {
+			break
 		}
-
-		kbus.kafkaBProducer = &producer
-	} else {
-		var producer sarama.AsyncProducer
-
-		for ntry = 0; ntry < kbus.connectRetries; ntry++ {
-			if !__testmode {
-				producer, err = sarama.NewAsyncProducer(brokers, kbus.kafkaConfig)
-			} else {
-				err = nil
-			}
-			if err != nil {
-				fmt.Println("ERROR: Unable to connect to Kafka! Trying again in 1 second...")
-				time.Sleep(1 * time.Second)
-			} else {
-				break
-			}
-		}
-
-		if ntry >= kbus.connectRetries {
-			err = fmt.Errorf("ERROR, exhausted retry count (%d), cannot connect to Kafka bus.\n",
-				kbus.connectRetries)
-			return err
-		}
-
-		kbus.kafkaNBProducer = &producer
+	}
+	if (ntry >= kbus.connectRetries) {
+		return fmt.Errorf("ERROR, exhausted retry count (%d), cannot connect to Kafka bus.\n",
+			kbus.connectRetries)
 	}
 
 	kbus.status = StatusOpen
-	fmt.Println("Connected to Kafka server as Writer.")
+
+	if (kbus.blocking == NonBlocking) {
+		//This thread handles message error tracking for NB writers.
+		go writerThread_Kafka(kbus)
+	}
+
+	logger.Printf("Connected to Confluent Kafka server as Writer.")
 	return nil
 }
 
@@ -518,7 +601,7 @@ func connect_kafka_w(kbus *MsgBusWriter_Kafka) error {
 // Return:   Kafka writer descriptor/interface, error status of the operation.
 /////////////////////////////////////////////////////////////////////////////
 
-func ConnectWriter_Kafka(cfg MsgBusConfig) (*MsgBusWriter_Kafka, error) {
+func connectWriter_Kafka(cfg MsgBusConfig) (*MsgBusWriter_Kafka, error) {
 	var err error
 
 	kbus := &MsgBusWriter_Kafka{status: StatusClosed,
@@ -527,13 +610,8 @@ func ConnectWriter_Kafka(cfg MsgBusConfig) (*MsgBusWriter_Kafka, error) {
 		kafkaPort:      cfg.Port,
 		kafkaTopic:     cfg.Topic,
 		connectRetries: cfg.ConnectRetries,
+		handleLock:     &sync.Mutex{},
 	}
-
-	kbus.kafkaConfig = sarama.NewConfig()
-	kbus.kafkaConfig.Version = sarama.V0_10_0_0
-	kbus.kafkaConfig.Producer.RequiredAcks = sarama.WaitForLocal
-	kbus.kafkaConfig.Producer.Compression = sarama.CompressionNone
-	kbus.kafkaConfig.Producer.Retry.Max = 10
 
 	// Try to connect to Kafka...
 
@@ -551,12 +629,11 @@ func ConnectWriter_Kafka(cfg MsgBusConfig) (*MsgBusWriter_Kafka, error) {
 /////////////////////////////////////////////////////////////////////////////
 
 func connect_kafka_r(kbus *MsgBusReader_Kafka) error {
-	var consumer *cluster.Consumer
-	var client *cluster.Client
+	var consumer *kafka.Consumer
 	var ntry int
 	var err error = nil
 
-	brokers := []string{kbus.kafkaHost + ":" + strconv.Itoa(kbus.kafkaPort)}
+	brokers := kbus.kafkaHost + ":" + strconv.Itoa(kbus.kafkaPort)
 	topic := []string{kbus.kafkaTopic}
 
 	if kbus.kafkaGroupId == "" {
@@ -565,26 +642,20 @@ func connect_kafka_r(kbus *MsgBusReader_Kafka) error {
 	}
 
 	for ntry = 0; ntry < kbus.connectRetries; ntry++ {
-		//NOTE: could just use cluster.NewConsumer(), but exposing the client
-		//interface has advantages for things like getting message offsets,
-		//partition info, etc.
 		if !__testmode {
-			client, err = cluster.NewClient(brokers, kbus.kafkaConfig)
+			//TODO: consume-from-latest doesn't seem to work
+			consumer, err = kafka.NewConsumer(&kafka.ConfigMap{
+								"bootstrap.servers": brokers,
+								"broker.address.family": "v4",
+								"group.id": kbus.kafkaGroupId,
+								"session.timeout.ms": 10000,
+							    "auto.offset.reset": "latest"})
+								//TODO: "default.topic.config": kafka.ConfigMap{"auto.offset.reset":"latest"},
 		} else {
 			err = nil
 		}
 		if err != nil {
-			fmt.Println("ERROR: can't create new kafka client: Trying again in 1 second...", err)
-			time.Sleep(time.Second)
-			continue
-		}
-		if !__testmode {
-			consumer, err = cluster.NewConsumerFromClient(client, kbus.kafkaGroupId, topic)
-		} else {
-			err = nil
-		}
-		if err != nil {
-			fmt.Println("ERROR: Unable to connect to Kafka: Trying again in 1 second...", err)
+			logger.Errorf("ERROR: Unable to connect to Kafka: '%v' - Trying again in 1 second...", err)
 			time.Sleep(1 * time.Second)
 			continue
 		}
@@ -594,33 +665,21 @@ func connect_kafka_r(kbus *MsgBusReader_Kafka) error {
 	}
 
 	if ntry >= kbus.connectRetries {
-		err = fmt.Errorf("ERROR, exhausted retry count (%d), cannot connect to Kafka bus.\n",
+		return fmt.Errorf("ERROR, exhausted retry count (%d), cannot connect to Kafka bus.\n",
 			kbus.connectRetries)
-		return err
 	}
 
-	//TEST CODE, DON'T DELETE
-
-	//parts,perr := client.Partitions(kbus.kafkaTopic)
-	//if (perr != nil) {
-	//    fmt.Println("ERROR getting partitions:",perr)
-	//} else {
-	//    fmt.Println("Partitions:",parts)
-	//    for i := range(parts) {
-	//        off,err := client.GetOffset(kbus.kafkaTopic,int32(i),sarama.OffsetNewest)
-	//        if (err != nil) {
-	//            fmt.Println("ERROR getting offset:",err)
-	//        } else {
-	//            fmt.Printf("Partition %d offset: %d\n",i,off)
-	//        }
-	//    }
-	//}
+	if (!__testmode) {
+		err = consumer.SubscribeTopics(topic,nil)
+		if (err != nil) {
+			return fmt.Errorf("Can't subscribe to topic '%s': %v",topic[0],err)
+		}
+	}
 
 	kbus.kafkaConsumer = consumer
-
 	kbus.status = StatusOpen
-	fmt.Println("Connected to Kafka server as Reader.")
-	return err
+	logger.Printf("Connected to Confluent Kafka server as Reader.")
+	return nil
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -640,17 +699,15 @@ func ConnectReader_Kafka(cfg MsgBusConfig) (*MsgBusReader_Kafka, error) {
 		kafkaTopic:     cfg.Topic,
 		kafkaGroupId:   cfg.GroupId,
 		connectRetries: cfg.ConnectRetries,
+		handleLock:     &sync.Mutex{},
 	}
-
-	kbus.kafkaConfig = cluster.NewConfig()
-	kbus.kafkaConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	// Try to connect to Kafka...
 
 	err = connect_kafka_r(kbus)
 	if err == nil {
 		kbus.readQ = make(chan string, MSG_QUEUE_MAX_LEN)
-		go ReaderThread_Kafka(kbus)
+		go readerThread_Kafka(kbus)
 	}
 	return kbus, err
 }
@@ -674,14 +731,15 @@ func Connect(cfg MsgBusConfig) (MsgBusIO, error) {
 
 	//Check for missing stuff
 
-	if cfg.BusTech == 0 {
+	if (cfg.BusTech == 0) {
 		err = fmt.Errorf("ERROR: Missing bus technology.")
 		return badbus, err
 	}
-	if cfg.Topic == "" {
+	if (cfg.Topic == "") {
 		err = fmt.Errorf("ERROR: Missing bus topic.")
 		return badbus, err
 	}
+
 	//Fixup defaults
 
 	if bcfg.Host == "" {
@@ -707,13 +765,16 @@ func Connect(cfg MsgBusConfig) (MsgBusIO, error) {
 		err = fmt.Errorf("ERROR: invalid bus direction '%d'", int(bcfg.Direction))
 		return badbus, err
 	}
+
+	logger.Printf("Message bus connect, kafka, confluent interface.")
+
 	if bcfg.ConnectRetries == 0 {
 		bcfg.ConnectRetries = 1000000 //retry "forever"
 	}
 
 	if bcfg.BusTech == BusTechKafka {
 		if bcfg.Direction == BusWriter {
-			mbw, mbw_err := ConnectWriter_Kafka(bcfg)
+			mbw, mbw_err := connectWriter_Kafka(bcfg)
 			return mbw, mbw_err
 		} else {
 			mbr, mbr_err := ConnectReader_Kafka(bcfg)
@@ -730,3 +791,4 @@ func Connect(cfg MsgBusConfig) (MsgBusIO, error) {
 	kb := &MsgBusWriter_Kafka{}
 	return kb, err
 }
+

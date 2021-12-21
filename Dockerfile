@@ -45,7 +45,7 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
 
 
 ### Final Stage ###

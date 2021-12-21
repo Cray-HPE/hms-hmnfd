@@ -27,7 +27,7 @@
 FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add build-base
 
 # Copy the files in for the next stages to use.
@@ -42,4 +42,4 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-msgbus/vendor
 FROM base
 
 RUN set -ex \
-    && go build -v github.com/Cray-HPE/hms-msgbus/...
+    && go build -tags musl -v github.com/Cray-HPE/hms-msgbus/...
