@@ -48,4 +48,4 @@ FROM base AS testing
 # Run unit tests...
 RUN set -ex \
     && go clean -testcache \
-    && go test -cover -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
+    && go test -cover -tags musl -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd

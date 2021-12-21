@@ -21,10 +21,7 @@
 NAME ?= hms-msgbus
 VERSION ?= $(shell cat .version)
 
-all: image unittest coverage
-
-image:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+all:  unittest coverage
 
 unittest:
 	./runUnitTest.sh

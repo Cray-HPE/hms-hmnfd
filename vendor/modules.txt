@@ -4,15 +4,12 @@ github.com/Cray-HPE/hms-base
 # github.com/Cray-HPE/hms-hmetcd v1.10.2
 ## explicit
 github.com/Cray-HPE/hms-hmetcd
-# github.com/Cray-HPE/hms-msgbus v1.10.2
+# github.com/Cray-HPE/hms-msgbus v1.11.0
 ## explicit
 github.com/Cray-HPE/hms-msgbus
-# github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798
-github.com/DataDog/zstd
-# github.com/Shopify/sarama v1.22.1
-github.com/Shopify/sarama
-# github.com/bsm/sarama-cluster v2.1.15+incompatible
-github.com/bsm/sarama-cluster
+# github.com/confluentinc/confluent-kafka-go v1.7.0
+github.com/confluentinc/confluent-kafka-go/kafka
+github.com/confluentinc/confluent-kafka-go/kafka/librdkafka_vendor
 # github.com/coreos/etcd v3.3.13+incompatible
 github.com/coreos/etcd/auth/authpb
 github.com/coreos/etcd/clientv3
@@ -20,14 +17,6 @@ github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
 github.com/coreos/etcd/etcdserver/etcdserverpb
 github.com/coreos/etcd/mvcc/mvccpb
 github.com/coreos/etcd/pkg/types
-# github.com/davecgh/go-spew v1.1.1
-github.com/davecgh/go-spew/spew
-# github.com/eapache/go-resiliency v1.1.0
-github.com/eapache/go-resiliency/breaker
-# github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
-github.com/eapache/go-xerial-snappy
-# github.com/eapache/queue v1.1.0
-github.com/eapache/queue
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/gogo/protobuf v1.2.1
@@ -40,8 +29,6 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/golang/snappy v0.0.1
-github.com/golang/snappy
 # github.com/gorilla/mux v1.8.0
 ## explicit
 github.com/gorilla/mux
@@ -51,11 +38,8 @@ github.com/gorilla/mux
 github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-retryablehttp v0.5.4
 github.com/hashicorp/go-retryablehttp
-# github.com/pierrec/lz4 v2.0.5+incompatible
-github.com/pierrec/lz4
-github.com/pierrec/lz4/internal/xxh32
-# github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
-github.com/rcrowley/go-metrics
+# github.com/sirupsen/logrus v1.8.1
+github.com/sirupsen/logrus
 # go.etcd.io/etcd v3.3.13+incompatible
 go.etcd.io/etcd/clientv3/concurrency
 # golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
@@ -64,12 +48,11 @@ golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
-golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9
+# golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.13.0] - 2021-12-20
+
+### Added
+
+- Now uses latest version of hms-msgbus, which now uses Confluent kafka interface
+.
+
 ## [1.12.0] - 2021-11-09
 
 ### Changed
