@@ -19,7 +19,7 @@ This service uses a RESTful interface to provide the following functions:
 * Ability to get and modify current service operating parameters
 * Ability to receive State Change Notifications from the Hardware State Manager
 
-_hmnfd_ typically runs on an SMS cluster as one or more Docker container 
+_hmnfd_ typically runs on a Kubernetes cluster as one or more Docker container 
 instances managed by Kubernetes.  It can also be run from a command shell 
 for testing purposes.
 
@@ -114,106 +114,32 @@ ETCD connectivity, etc. to determine fitness and health.
 
 ## hmnfd API
 
-_hmnfd_'s RESTful API is a follows:
-
-### Subscriptions
-
-```bash
-GET /v2/subscribe
-
-    Retrieve currently-held SCN subscriptions, system-wide.
-
-GET /v2/subscriptions/{xname}
-
-    Retrieve currently-held SCN subscriptions for a given component 
-    and all agents running on that component.
-
-DELETE /v2/subscriptions/{xname}/agents
-
-    Delete all SCN subscriptions for a component.
-
-POST /v2/subscriptions/{xname}/agents/{agent}
-
-    Create an SCN subscription for a specific software agent running on a 
-    specific component.  Once this is done, the subscribing components will 
-    receive these notifications as they occur, using the URL specified 
-    at subscription time.
-
-PATCH /v2/subscriptions/{xname}/agents/{agent}
-
-    Modify an SCN subscription for a specific software agent running on 
-    a specific component.
-
-DELETE /v2/subscriptions/{xname}/agents/{agent}
-
-    Delete an SCN subscription for a specific software agent running on 
-    a specific component.
-
-```
-
-### SCN
-
-```bash
-POST /v2/scn
-
-    Inject an SCN into HMNFD.  Note that service mesh security prohibits this
-    from succeeding outside the Kubernetes service mesh.
-
-```
-
-### Params
-
-```bash
-GET /v2/params
-
-    Retrieve all HMNFD configurable parameters.
-
- PATCH /v2/params
-
-    Update one or more HMNFD configurable parameters on the fly.  Note that
-    doing this will get round-robin'd to only one copy of HMNFD; if all 
-    running instances/pods are to be updated, this must be done several 
-    times in a row to insure all copies get the same parameter updates.
-
-```
-
-### Health
-
-```bash
-GET /v2/health
-
-    Query the health of HMNFD.
-
-GET v2/liveness
-
-    Query the service "liveness", used by Kubernetes.
-
-GET /v2/readiness
-
-    Query HMNFD's "readiness", used by Kubernetes.
-
-```
-
-See https://github.com/Cray-HPE/hms-hmi-nfd/blob/master/api/swagger_v2.yaml for details on the hbtd RESTful API payloads and return values.
+_hmnfd_'s RESTful API is described and specified in this repo's 
+api/swagger_v2.yaml.  Refer to that file for details.
 
 ## hmnfd Command Line
 
-```bash
+```
 Usage: hmnfd [options]
 
   --debug=num             Debug level (Default: 0)
-  --kv_url=num            Key-value service base URL. (Default: mem:)
+  --kv_url=num            Key-value service base URL. (Default: "mem:")
+	KV_URL_BASE)
   --help                  Help text.
   --nosm                  Don't contact State Manager (for debugging).
   --port=num              HTTPS port to listen on. (Default: 28600)
+	URL_PORT)
+  --scn_backoff=num       Seconds between SCN send retries (Default: 1)
+  --scn_retries=num       Number of times to retry sending SCNs (Default: 5)
   --sm_retries=num        Number of times to retry on State Manager error. 
-                             (Default: 3)
+                              (Default: 3)
   --sm_timeout=num        Seconds to wait on State Manager accesses. 
-                             (Default: 10)
+                              (Default: 3)
   --sm_url=url            State Manager base URL. 
-                             (Default: https://localhost:27999/hsm/v1)
-  --telemetry_host=h:p:t  Hostname:port:topic  of telemetry service
+                              (Default: https://localhost:27999/hsm/v1)
+  --telemetry_host=h:p:t  Hostname:port:topic  of telemetry service.
   --use_telemetry         Inject notifications onto telemetry bus (Default: no)
+
 ```
 
 
@@ -226,7 +152,7 @@ Usage: hmnfd [options]
 The simplest way to do this is to be in the top-level directory of the HMNFD
 repo, then run:
 
-```bash
+```
 $ make image
 ```
 
@@ -235,7 +161,7 @@ This will build a Docker container image tagged with the current version
 
 #### Building An HMNFD binary
 
-```bash
+```
 $ cd cmd/hms-hmi-nfd
 $ go build -mod=vendor -o hmnfd
 ```
@@ -246,7 +172,7 @@ This produces an 'hmnfd' binary in the same directory.
 
 Starting _hmnfd_:
 
-```bash
+```
 ./hmnfd --sm_url=https://localhost:27999/hsm/smd/v1 --port=28501 --use_telemetry=no --kv_url="mem:"
 ```
 
@@ -256,7 +182,7 @@ Build the docker container image as shown above.
 
 Then run (add `-d` to the arguments list of `docker run` to run in detached/background mode):
 
-```bash
+```
 docker run -p 28500:28500 --name hmnfd cray-hmnfd:1.13.0
 ```
 
