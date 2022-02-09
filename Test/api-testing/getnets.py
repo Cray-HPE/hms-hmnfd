@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # MIT License
 #
 # (C) Copyright [2021] Hewlett Packard Enterprise Development LP
