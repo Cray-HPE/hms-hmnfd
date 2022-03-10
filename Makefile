@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,18 +25,7 @@ NAME ?= cray-hmnfd
 VERSION ?= $(shell cat .version)
 DOCKER_IMAGE ?= ${NAME}:${VERSION}
 
-# Common RPM variable
-BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
-
-# CT Test RPM
-TEST_SPEC_NAME ?= hms-hmnfd-ct-test
-TEST_RPM_VERSION ?= $(shell cat .version)
-TEST_SPEC_FILE ?= ${TEST_SPEC_NAME}.spec
-TEST_SOURCE_NAME ?= ${TEST_SPEC_NAME}-${TEST_RPM_VERSION}
-TEST_BUILD_DIR ?= $(PWD)/dist/hmnfd-ct-test-rpmbuild
-TEST_SOURCE_PATH := ${TEST_BUILD_DIR}/SOURCES/${TEST_SOURCE_NAME}.tar.bz2
-
-all: image unittest integration test_rpm
+all: image unittest integration snyk ct ct_image
 
 image:
 	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
@@ -47,21 +36,12 @@ unittest:
 integration:
 	./runIntegration.sh
 
-test_rpm: test_rpm_prepare test_rpm_package_source test_rpm_build_source test_rpm_build
-
-test_rpm_prepare:
-	rm -rf $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/SPECS $(TEST_BUILD_DIR)/SOURCES
-	cp $(TEST_SPEC_FILE) $(TEST_BUILD_DIR)/SPECS/
-
-test_rpm_package_source:
-	tar --transform 'flags=r;s,^,/$(TEST_SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(TEST_SOURCE_PATH) ./${TEST_SPEC_FILE} ./Test/ct ./LICENSE
-
-test_rpm_build_source:
-	BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ts $(TEST_SOURCE_PATH) --define "_topdir $(TEST_BUILD_DIR)"
-
-test_rpm_build:
-	BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(TEST_SPEC_FILE) --define "_topdir $(TEST_BUILD_DIR)" --nodeps
-
 snyk:
 	./runSnyk.sh
+
+#TODO: make this work
+ct:
+	./runCT.sh
+
+ct_image:
+	docker build --no-cache -f Test/ct/Dockerfile Test/ct/ --tag hms-hmnfd-ct:${VERSION}

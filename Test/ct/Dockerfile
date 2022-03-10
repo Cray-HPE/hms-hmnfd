@@ -1,8 +1,6 @@
-#!/usr/bin/env bash
-
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -16,21 +14,24 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-set -ex
+FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.0.0
 
-GITSHA=$(git rev-parse HEAD)
-TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%SZ")
-IMAGE="cray/hms-hmi-nfd-coverage"
-# image names must be lower case
-UNIQUE_TAG=$(echo ${IMAGE}_${GITSHA}_${TIMESTAMP} | tr '[:upper:]' '[:lower:]')
-# export NO_CACHE=--no-cache # this will cause docker build to run with no cache; off by default for local builds, enabled in jenkinsfile
+COPY smoke/ /src/app
+#COPY functional/ /src/app
+#COPY tavern_global_config_ct_test.yaml /src/app/tavern_global_config_ct_test.yaml
 
-DOCKER_BUILDKIT=0 docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.testing .
-docker image rm $UNIQUE_TAG --force
+ENV PATH="/src/libs:${PATH}"
+ENV PATH="/src/app:${PATH}"
 
+USER root
+RUN chown  -R 65534:65534 /src
+USER 65534:65534
+
+# this is inherited from the hms-test container
+ENTRYPOINT [ "entrypoint.sh" ]

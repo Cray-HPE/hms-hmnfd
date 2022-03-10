@@ -73,7 +73,7 @@ services:
       - ttest
 
   etcd:
-    image: arti.dev.cray.com/third-party-docker-stable-local/coreos/etcd:v3.4.7
+    image: artifactory.algol60.net/quay.io/coreos/etcd:v3.4.7
     hostname: etcd-server_${HSUFFIX}
     container_name: etcd_server_${HSUFFIX}
     ports:
@@ -97,7 +97,7 @@ services:
     ports:
       - "${FAKE_HMNFD_PORT}:${FAKE_HMNFD_PORT}"
     environment:
-      - SM_URL=http://fake_hsm_${HSUFFIX}:${FAKE_SM_PORT}/hsm/v1
+      - SM_URL=http://fake_hsm_${HSUFFIX}:${FAKE_SM_PORT}/hsm/v2
       - PORT=${FAKE_HMNFD_PORT}
       - KV_URL=http://etcd_server_${HSUFFIX}:${FAKE_ETCD_A_PORT}
     networks: 

@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,15 +22,27 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-set -ex
+# wait-for.sh; used by runCT.sh to make sure HSM has been populated with data before running.
+echo "Initiating..."
+URL="http://cray-smd:27779/hsm/v2/State/Components"
+sentry=1
+limit=200
+while :; do
+  length=$(curl --silent ${URL} | jq '.Components | length')
 
-GITSHA=$(git rev-parse HEAD)
-TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%SZ")
-IMAGE="cray/hms-hmi-nfd-coverage"
-# image names must be lower case
-UNIQUE_TAG=$(echo ${IMAGE}_${GITSHA}_${TIMESTAMP} | tr '[:upper:]' '[:lower:]')
-# export NO_CACHE=--no-cache # this will cause docker build to run with no cache; off by default for local builds, enabled in jenkinsfile
+  if [ ! -z "$length" ] && [ "$length" -gt "0" ]; then
+    echo $URL" is available"
+    break
+  fi
 
-DOCKER_BUILDKIT=0 docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.testing .
-docker image rm $UNIQUE_TAG --force
+  if [ "$sentry" -gt "$limit" ]; then
+    echo "Failed to connect for $limit, exiting"
+    exit 1
+  fi
 
+  ((sentry++))
+
+  echo $URL" is unavailable - sleeping"
+  sleep 1
+
+done
