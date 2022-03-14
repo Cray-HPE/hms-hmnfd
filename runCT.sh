@@ -24,8 +24,6 @@
 
 set -x
 
-#TODO: Update this entire file for HMNFD, copied from FAS
-
 # Configure docker compose
 export COMPOSE_PROJECT_NAME=$RANDOM
 export COMPOSE_FILE=docker-compose.test.ct.yaml
@@ -36,7 +34,7 @@ echo "COMPOSE_FILE: $COMPOSE_FILE"
 
 function cleanup() {
   docker-compose down
-  if ! [[ $? -eq 0 ]]; then
+  if [[ $? -ne 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
   fi
@@ -47,8 +45,9 @@ function cleanup() {
 # Get the base containers running
 echo "Starting containers..."
 docker-compose build --no-cache
-docker-compose up  -d cray-fas #this will stand up everything except for the integration test container
+docker-compose up -d cray-hmnfd #this will stand up everything except for the integration test container
 
+# Run the CT smoke tests
 docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
 test_result=$?
 echo "Cleaning up containers..."
@@ -57,18 +56,19 @@ if [[ $test_result -ne 0 ]]; then
   cleanup 1
 fi
 
-docker-compose up -d ct-tests-functional-wait-for-smd
-docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
-docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
+# No CT functional tests yet
+#docker-compose up -d ct-tests-functional-wait-for-smd
+#docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
+#docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
 
-docker-compose up --exit-code-from ct-tests-functional ct-tests-functional
-test_result=$?
+#docker-compose up --exit-code-from ct-tests-functional ct-tests-functional
+#test_result=$?
 # Clean up
-echo "Cleaning up containers..."
-if [[ $test_result -ne 0 ]]; then
-  echo "CT functional tests FAILED!"
-  cleanup 1
-fi
+#echo "Cleaning up containers..."
+#if [[ $test_result -ne 0 ]]; then
+#  echo "CT functional tests FAILED!"
+#  cleanup 1
+#fi
 
 # Cleanup
 echo "CT tests PASSED!"

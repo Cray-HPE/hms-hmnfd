@@ -39,7 +39,6 @@ integration:
 snyk:
 	./runSnyk.sh
 
-#TODO: make this work
 ct:
 	./runCT.sh
 

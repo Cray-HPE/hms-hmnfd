@@ -3,70 +3,70 @@
   "default_base_url": "http://cray-hmnfd/hmi/",
   "test_paths": [
     {
-      "path": "v1/health",
+      "path": "hmi/v1/health",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v1/liveness",
+      "path": "hmi/v1/liveness",
       "expected_status_code": 204,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v1/readiness",
+      "path": "hmi/v1/readiness",
       "expected_status_code": 204,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v1/subscriptions",
+      "path": "hmi/v1/subscriptions",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v1/params",
+      "path": "hmi/v1/params",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v2/health",
+      "path": "hmi/v2/health",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v2/liveness",
+      "path": "hmi/v2/liveness",
       "expected_status_code": 204,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v2/readiness",
+      "path": "hmi/v2/readiness",
       "expected_status_code": 204,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v2/subscriptions",
+      "path": "hmi/v2/subscriptions",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
       "headers": {}
     },
     {
-      "path": "v2/params",
+      "path": "hmi/v2/params",
       "expected_status_code": 200,
       "method": "GET",
       "body": null,
