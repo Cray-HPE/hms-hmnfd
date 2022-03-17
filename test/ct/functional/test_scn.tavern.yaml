@@ -1,0 +1,282 @@
+---
+
+# This test exercises the /scn API in hmnfd.  
+#
+# Note that this test can really only be run using a very specific "node"
+# SCN endpoint -- it must contain a REST GET API which returns the most
+# recent SCN received.  This test depends on it.  Thus, it can't really
+# be run on a production system.  There is no other way to do this, since
+# in a production system the SCN receiver API provides no way to see if any
+# particular SCN was delivered.
+#
+# This test will throw SCNs directly at hmnfd -- it will not use the
+# State Manager to do so.  The test can be changed to make that happen,
+# but that is more of an integration test than a functional one.
+#
+# Requirements:
+#   o hmnfd running
+#   o State Manager or equivalent faked-out facsimile
+#   o Fake node SCN subscribers with special API to read back received SCNs.
+#   o It is expected that there will be 2 subscribers:
+#     1. node: x0c0s0b0n0, subscriber: NodeHandler@x0c0s0b0n0, comps: allnodes 
+#        SCNs: On/AdminDown/Enabled/Service
+#        url:  http://localhost:29000/x0c0s0b0n0/scn
+#     2. node: x0c0s0b0n1, subscriber: NodeHandler@x0c0s0b0n1, 
+#        comps: x0c0s0b0n3,x0c0s0b0n4
+#        SCNs: Ready
+#        url:  http://localhost:29001/x0c0s0b0n1/scn
+#
+# NOTE: To make this test usable in a production environment, all of the 
+# checks for received SCNs in the fake subscribers have to be removed.  All
+# we can check at that point are the return values of the REST POST operations,
+# which is very, very little.  One option would be to put the fake subscribers
+# into the hmnfd pod somehow and get them running.  This still isn't ideal
+# but at least can exercise quite a lot of the hmnfd logic.
+#
+# Destructive: Running on a live system may result in fake SCNs being
+#              received by real subscribers.
+
+# TODO:
+# o Add more checking, making sure fields that aren't supposed to be populated
+#   are not populated; check the return headers; check RFC7808 stuff; etc.
+# o Maybe use some of the fancy tavern stuff to reduce YAML bloat
+
+
+
+
+test_name: HMNFD /scn API test
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Clear out last SCN records from n0
+    request:
+      url: "{n0_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+  - name: Clear out last SCN records from n1
+    request:
+      url: "{n1_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+  - name: Tell n0 to do its subscriptions
+    request:
+      url: "{n0_sub_url}/do_subscribe"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+
+  - name: Tell n1 to do its subscriptions
+    request:
+      url: "{n1_sub_url}/do_subscribe"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+
+  - name: Throw SCN with state change to On.  Should be seen only by n0
+    request:
+      url: "{hmnfd_url}/v1/scn"
+      verify: False
+      method: POST
+      json:
+        Components:
+          - "x1c0s0b0n0"
+          - "x1c0s0b0n1"
+        State: "On"
+    response:
+      status_code: 200
+    delay_after: 10 
+
+  - name: Query subscriber n0 to verify correct SCN was delivered to n0
+    request:
+      url: "{n0_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components:
+          - "x1c0s0b0n0"
+          - "x1c0s0b0n1"
+        State: "On"
+         
+  - name: Query subscriber n1 to verify nothing was delivered to n1
+    request:
+      url: "{n1_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components: null
+
+############# clean out  last scn records
+
+  - name: Clear out last SCN records from n0
+    request:
+      url: "{n0_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+  - name: Clear out last SCN records from n1
+    request:
+      url: "{n1_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+############# test n1 delivery
+
+  - name: Throw SCN with state change to Ready.  Should be seen only by n1
+    request:
+      url: "{hmnfd_url}/v1/scn"
+      verify: False
+      method: POST
+      json:
+        Components:
+          - "x0c0s0b0n4"
+          - "x1c0s0b0n1"
+        State: "Ready"
+    response:
+      status_code: 200
+    delay_after: 10
+
+  - name: Query subscriber n1 to verify correct SCN was delivered to n1
+    request:
+      url: "{n1_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components:
+          - "x0c0s0b0n4"
+        State: "Ready"
+         
+  - name: Query subscriber n0 to verify nothing was delivered to n0
+    request:
+      url: "{n0_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components: null
+
+############# clean out  last scn records
+
+  - name: Clear out last SCN records from n0
+    request:
+      url: "{n0_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+  - name: Clear out last SCN records from n1
+    request:
+      url: "{n1_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+# set node x0c0s0b0n3 to Ready and AdminDown, both should get the SCN
+
+  - name: Throw SCN with state change to Ready and AdminDown, node x0c0s0b0n3.  Should be seen only by both nodes
+    request:
+      url: "{hmnfd_url}/v1/scn"
+      verify: False
+      method: POST
+      json:
+        Components:
+          - "x0c0s0b0n3"
+          - "x0c0s0b0n1"
+        State: "Ready"
+        SoftwareStatus: "AdminDown"
+    response:
+      status_code: 200
+    delay_after: 10
+
+  - name: Query subscriber n0 to verify correct SCN was delivered to n0, AdminDown x0c0s0b0n3 and x0c0s0b0n1
+    request:
+      url: "{n0_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components:
+          - "x0c0s0b0n3"
+          - "x0c0s0b0n1"
+        SoftwareStatus: "AdminDown"
+         
+  - name: Query subscriber n1 to verify SCN was delivered to n1, Ready, x0c0s0b0n3 only
+    request:
+      url: "{n1_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components:
+          - "x0c0s0b0n3"
+        State: "Ready"
+
+############# clean out  last scn records
+
+  - name: Clear out last SCN records from n0
+    request:
+      url: "{n0_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+  - name: Clear out last SCN records from n1
+    request:
+      url: "{n1_sub_url}/clean"
+      verify: False
+      method: POST
+    response:
+      status_code: 200
+
+# set node x0c0s0b0n0 to SubRole ncn-w, it should get the SCN
+
+  - name: Throw SCN with SubRole change to ncn-w, node x0c0s0b0n0.  Should be seen only by that node
+    request:
+      url: "{hmnfd_url}/v1/scn"
+      verify: False
+      method: POST
+      json:
+        Components:
+          - "x0c0s0b0n0"
+        SubRole: "ncn-w"
+    response:
+      status_code: 200
+    delay_after: 10
+
+  - name: Query subscriber n0 to verify correct SCN was delivered to n0, SubRole on x0c0s0b0n0 change to ncn-w
+    request:
+      url: "{n0_sub_url}/lastscn"
+      verify: False
+      method: GET
+    response:
+      status_code: 200
+      body:
+        Components:
+          - "x0c0s0b0n0"
+        SubRole: "ncn-w"
+         
+

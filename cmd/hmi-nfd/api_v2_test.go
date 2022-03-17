@@ -35,7 +35,7 @@ import (
 )
 
 type subStuff struct {
-	url string
+	url    string
 	method string
 }
 
@@ -77,7 +77,7 @@ func TestScnSubscribeHandler_v2(t *testing.T) {
 	}
 	rr1 := httptest.NewRecorder()
 
-	req3, err3 := http.NewRequest("DELETE", "http://localhost:8080/hmi/v2/subscriptions/x0c1s2b0n3/agents/handler",nil)
+	req3, err3 := http.NewRequest("DELETE", "http://localhost:8080/hmi/v2/subscriptions/x0c1s2b0n3/agents/handler", nil)
 	if err3 != nil {
 		t.Fatal(err3)
 	}
@@ -372,7 +372,7 @@ func TestSubscriptionsHandler_v2(t *testing.T) {
 			subslist.SubscriptionList[six_1].SubRoles[1])
 	}
 
-	//Test bad requests
+	//test bad requests
 
 	ops := []subStuff{
 		{url: "http://localhost:8080/hmi/v2/subscriptions", method: "PUT"},
@@ -388,17 +388,16 @@ func TestSubscriptionsHandler_v2(t *testing.T) {
 	}
 
 	req1_payload = bytes.NewBufferString("")
-	for _,op := range(ops) {
+	for _, op := range ops {
 		req1, err1 = http.NewRequest(op.method, op.url, req1_payload)
 		if err1 != nil {
-			t.Errorf("Error creating HTTP request: %v",err1)
+			t.Errorf("Error creating HTTP request: %v", err1)
 		}
 		rr1 = httptest.NewRecorder()
 		router.ServeHTTP(rr1, req1)
-		if (rr1.Code == http.StatusOK) {
+		if rr1.Code == http.StatusOK {
 			t.Errorf("ERROR, %s request for '%s' should have failed!",
-				op.method,op.url)
+				op.method, op.url)
 		}
 	}
 }
-

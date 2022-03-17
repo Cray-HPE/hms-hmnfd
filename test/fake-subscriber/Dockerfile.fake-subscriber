@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,32 +20,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building Cray-HPE NFD (Node Fanout Daemon).
+# Dockerfile for building HMS fake node/SCN subscriber for testing.
+# Author: mpkelly
+# Date: 12-February 2019
 
-### build-base stage ###
-# Build base just has the packages installed we need.
-FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
-
-RUN set -ex \
-    && apk -U upgrade \
-    && apk add build-base
-
-
-### base stage ###
-# Base copies in the files we need to test/build.
-FROM build-base AS base
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
 RUN go env -w GO111MODULE=auto
 
-# Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
+COPY fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
 
-### Unit Test Stage ###
-FROM base AS testing
+### Final Stage ###
 
-# Run unit tests...
-RUN set -ex \
-    && go clean -testcache \
-    && go test -cover -tags musl -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
+FROM artifactory.algol60.net/docker.io/alpine:3.15
+LABEL maintainer="Hewlett Packard Enterprise"
+STOPSIGNAL SIGTERM
+
+# Copy the final binary.  
+
+COPY --from=builder /usr/local/bin/fake-subscriber /usr/local/bin
+
+# Run the fake-subscriber daemon.  Env vars come from the .yaml file.
+
+CMD ["sh", "-c", "fake-subscriber"]

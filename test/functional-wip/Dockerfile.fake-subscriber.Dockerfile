@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,19 +20,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.0.0
+# Dockerfile for building HMS fake node/SCN subscriber for testing.
+# Author: mpkelly
+# Date: 12-February 2019
 
-COPY smoke/ /src/app
-# No CT functional tests yet
-#COPY functional/ /src/app
-#COPY tavern_global_config_ct_test.yaml /src/app/tavern_global_config_ct_test.yaml
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
-ENV PATH="/src/libs:${PATH}"
-ENV PATH="/src/app:${PATH}"
+RUN go env -w GO111MODULE=auto
 
-USER root
-RUN chown -R 65534:65534 /src
-USER 65534:65534
+COPY test/fake-subscriber/fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
-# this is inherited from the hms-test container
-ENTRYPOINT [ "entrypoint.sh" ]
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
+
+### Final Stage ###
+
+FROM artifactory.algol60.net/docker.io/alpine:3.15
+LABEL maintainer="Hewlett Packard Enterprise"
+STOPSIGNAL SIGTERM
+
+# Copy the final binary.  
+
+COPY --from=builder /usr/local/bin/fake-subscriber /usr/local/bin
+
+# Run the fake-subscriber daemon.  Env vars come from the .yaml file.
+
+CMD ["sh", "-c", "fake-subscriber"]

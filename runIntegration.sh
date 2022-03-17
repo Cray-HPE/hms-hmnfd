@@ -145,7 +145,7 @@ logfilename=testcluster_${proj_name}.logs
 
 for fff in `echo ${DOCKERFILEZ}`; do
     rm -f ${fff}
-    ln -s Test/api-testing/${fff}
+    ln -s test/api-testing/${fff}
 done
 
 DCOMPOSE="${docker_compose_exe} -p ${proj_name} -f ${docker_compose_file}"
@@ -186,7 +186,7 @@ docker network inspect ${container_network}
 # services running in the cluster in the building/running our TAVERN test 
 # container.
 
-addhosts=`docker network inspect ${container_network} | ./Test/api-testing/getnets.py`
+addhosts=`docker network inspect ${container_network} | ./test/api-testing/getnets.py`
 
 if [[ "${addhosts}" == "" ]]; then
     echo "No containers/network data found in docker network for our services, exiting."
@@ -199,7 +199,7 @@ fi
 # Create common.yaml file.  This is because common.yaml can't do variable
 # substitution (even though all other .yaml files can...)
 
-cat << COMMON > Test/api-testing/common.yaml
+cat << COMMON > test/api-testing/common.yaml
 # Note that the host names are set up for running in Docker containers
 # where most of the containers are running within a docker-compose framework.
 # To run this outside of the containers, the hostnames in the URLs below
@@ -223,13 +223,13 @@ echo "Addhosts: .${addhosts}."
 echo "NW: .${container_network}."
 echo "Running: DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern ."
 
-DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern .
+DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f test/api-testing/Dockerfile.tavern .
 
 test_rslt=$?
 
 # Shut down and clean up
 
-rm -f Test/api-testing/common.yaml
+rm -f test/api-testing/common.yaml
 
 echo " "
 echo "=============== > Shutting down container set..."

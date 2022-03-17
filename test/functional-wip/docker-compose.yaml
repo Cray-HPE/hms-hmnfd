@@ -8,26 +8,26 @@ networks:
   hmnfd:
 
 services:
-  ct-tests-smoke:
+#  ct-tests-smoke:
+#    build:
+#      context: test/ct/
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - cray-hmnfd
+#    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/hmi
+#    networks:
+#      - hmnfd
+  # No CT functional tests yet
+  ct-tests-functional:
     build:
-      context: test/ct/
+      context: ../ct/
       dockerfile: Dockerfile
     depends_on:
       - cray-hmnfd
-    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/hmi
+      - cray-smd
+    entrypoint: entrypoint.sh functional -c /src/app/tavern_global_config_ct_test.yaml -p /src/app
     networks:
       - hmnfd
-  # No CT functional tests yet
-  #ct-tests-functional:
-  #  build:
-  #    context: test/ct/
-  #    dockerfile: Dockerfile
-  #  depends_on:
-  #    - cray-hmnfd
-  #    - cray-smd
-  #  entrypoint: entrypoint.sh functional -c /src/app/tavern_global_config_ct_test.yaml -p /src/app
-  #  networks:
-  #    - hmnfd
   #ct-tests-functional-wait-for-smd:
   #  build:
   #    context: test/ct/
@@ -37,18 +37,60 @@ services:
   #    - cray-smd
   #  networks:
   #    - hmnfd
+  fakesub_a:
+    build:
+      context: ../fake-subscriber
+      dockerfile: Dockerfile.fake-subscriber
+#    image: fake-subscriber:${HTAG}_${HSUFFIX}
+#    hostname: fake_subscriber_a_${HSUFFIX}
+#    container_name: fake_subscriber_a_${HSUFFIX}
+#    ports:
+#      - "${FAKE_SUBA_PORT}:${FAKE_SUBA_PORT}"
+    environment:
+      - NODE=x0c0s0b0n0
+      - PORT=20999
+      - SUBNODES=allnodes
+      - SUBSTATES=On
+      - SUBSWSTATUS=AdminDown
+      - ROLES=Service
+      - SUBROLES=ncn-w
+      - ENABLED=1
+      - NFDSUBURL=http://cray-hmnfd:28600/hmi/v1/subscribe
+      - FAKEHOST=fake_subscriber_a
+    networks:
+      - hmnfd
+
+  fakesub_b:
+    build:
+      context: ../fake-subscriber
+      dockerfile: Dockerfile.fake-subscriber
+#    image: fake-subscriber:${HTAG}_${HSUFFIX}
+#    hostname: fake_subscriber_b_${HSUFFIX}
+#    container_name: fake_subscriber_b_${HSUFFIX}
+#    ports:
+#      - "${FAKE_SUBB_PORT}:${FAKE_SUBB_PORT}"
+    environment:
+      - NODE=x0c0s0b0n1
+      - PORT=20998
+      - SUBNODES=x0c0s0b0n3,x0c0s0b0n4
+      - SUBSTATES=Ready
+      - NFDSUBURL=http://cray-hmnfd:28600/hmi/v1/subscribe
+      - FAKEHOST=fake_subscriber_b
+    networks:
+      - hmnfd
   cray-hmnfd:
     hostname: cray-hmnfd
     build:
-      context: .
-      dockerfile: Dockerfile.ct.testing
+      context: ../../
+      dockerfile: Dockerfile
     environment:
-      - DEBUG=0
+      - DEBUG=3
       - SM_URL=http://cray-smd:27779/hsm/v2
       - INBOUND_SCN_URL=http://cray-hmnfd:28600/hmi/v1/scn
       - SM_RETRIES=3
       - SM_TIMEOUT=10
       - PORT=28600
+      - HMNFD_FANOUT_SYNC=1
       - ETCD_HOST=etcd
       - ETCD_PORT=2379
       - TELEMETRY_HOST=kafka:9092:cray-hmsstatechange-notifications

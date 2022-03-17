@@ -1,9 +1,6 @@
-#!/usr/bin/env bash
-
-#
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,40 +19,35 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
-#
-set -x
+
+# Dockerfile for building Cray-HPE NFD (Node Fanout Daemon).
+
+### build-base stage ###
+# Build base just has the packages installed we need.
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
+
+RUN set -ex \
+    && apk -U upgrade \
+    && apk add build-base
 
 
-# Configure docker compose
-export COMPOSE_PROJECT_NAME=$RANDOM
-export COMPOSE_FILE=docker-compose.test.unit.yaml
+### base stage ###
+# Base copies in the files we need to test/build.
+FROM build-base AS base
 
-echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
-echo "COMPOSE_FILE: $COMPOSE_FILE"
+RUN go env -w GO111MODULE=auto
 
-
-function cleanup() {
-  docker-compose down
-  if ! [[ $? -eq 0 ]]; then
-    echo "Failed to decompose environment!"
-    exit 1
-  fi
-  exit $1
-}
+# Copy all the necessary files to the image.
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
 
 
-echo "Starting containers..."
-docker-compose build  --no-cache
-docker-compose up --exit-code-from unit-tests unit-tests
+### Unit test Stage ###
+FROM base AS testing
 
-test_result=$?
+WORKDIR /go
 
-# Clean up
-echo "Cleaning up containers..."
-if [[ $test_result -ne 0 ]]; then
-  echo "Unit tests FAILED!"
-  cleanup 1
-fi
-
-echo "Unit tests PASSED!"
-cleanup 0
+# tags -musl ::: It's for the confluent kafka Go package, which uses some funky library that is required to explicitly be linked in.
+# if you take this out, it will break!
+# Run unit tests.
+CMD ["sh", "-c", "go test -cover -tags musl -v github.com/Cray-HPE/hms-hmi-nfd/..."]
