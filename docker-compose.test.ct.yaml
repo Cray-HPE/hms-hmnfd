@@ -41,7 +41,7 @@ services:
     hostname: cray-hmnfd
     build:
       context: .
-      dockerfile: Dockerfile.ct.testing
+      dockerfile: Dockerfile
     environment:
       - DEBUG=0
       - SM_URL=http://cray-smd:27779/hsm/v2

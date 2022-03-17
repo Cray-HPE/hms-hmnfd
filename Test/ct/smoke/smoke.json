@@ -1,6 +1,6 @@
 {
   "smoke_test_name": "hmnfd-smoke-tests",
-  "default_base_url": "http://cray-hmnfd/hmi/",
+  "default_base_url": "http://cray-hmnfd/",
   "test_paths": [
     {
       "path": "hmi/v1/health",
