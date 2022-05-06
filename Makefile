@@ -43,4 +43,4 @@ ct:
 	./runCT.sh
 
 ct_image:
-	docker build --no-cache -f Test/ct/Dockerfile Test/ct/ --tag hms-hmnfd-ct:${VERSION}
+	docker build --no-cache -f test/ct/Dockerfile test/ct/ --tag hms-hmnfd-ct:${VERSION}

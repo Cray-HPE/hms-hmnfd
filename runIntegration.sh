@@ -221,7 +221,7 @@ echo " "
 
 echo "Addhosts: .${addhosts}."
 echo "NW: .${container_network}."
-echo "Running: DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f Test/api-testing/Dockerfile.tavern ."
+echo "Running: DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f test/api-testing/Dockerfile.tavern ."
 
 DOCKER_BUILDKIT=0 docker build --rm --no-cache --network=${container_network} ${addhosts} -f test/api-testing/Dockerfile.tavern .
 

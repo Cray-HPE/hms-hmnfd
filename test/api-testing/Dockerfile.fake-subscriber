@@ -28,7 +28,7 @@ FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
 RUN go env -w GO111MODULE=auto
 
-COPY Test/fake-subscriber/fake-subscriber.go ${GOPATH}/src/fake-subscriber/
+COPY test/fake-subscriber/fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
 RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
 
