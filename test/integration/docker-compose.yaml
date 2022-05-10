@@ -8,7 +8,6 @@ networks:
   hmnfd:
 
 services:
-  #TODO: this is new
   integration-tests:
     build:
       context: .
@@ -16,27 +15,15 @@ services:
     depends_on:
       - cray-hmnfd
       - cray-smd
+      - fakesub_a
+      - fakesub_b
     entrypoint: entrypoint.sh functional -c /src/app/tavern_global_config_integration_test.yaml -p /src/app
     networks:
       - hmnfd
-  #ct-tests-functional-wait-for-smd:
-  #  build:
-  #    context: test/ct/
-  #    dockerfile: Dockerfile.wait-for-smd.Dockerfile
-  #  depends_on:
-  #    - cray-hmnfd
-  #    - cray-smd
-  #  networks:
-  #    - hmnfd
   fakesub_a:
     build:
       context: ../fake-subscriber
       dockerfile: Dockerfile.fake-subscriber
-    #image: fake-subscriber:${HTAG}_${HSUFFIX}
-    #hostname: fake_subscriber_a_${HSUFFIX}
-    #container_name: fake_subscriber_a_${HSUFFIX}
-    #ports:
-    #  - "${FAKE_SUBA_PORT}:${FAKE_SUBA_PORT}"
     environment:
       - NODE=x0c0s0b0n0
       - PORT=20999
@@ -54,11 +41,6 @@ services:
     build:
       context: ../fake-subscriber
       dockerfile: Dockerfile.fake-subscriber
-    #image: fake-subscriber:${HTAG}_${HSUFFIX}
-    #hostname: fake_subscriber_b_${HSUFFIX}
-    #container_name: fake_subscriber_b_${HSUFFIX}
-    #ports:
-    #  - "${FAKE_SUBB_PORT}:${FAKE_SUBB_PORT}"
     environment:
       - NODE=x0c0s0b0n1
       - PORT=20998
