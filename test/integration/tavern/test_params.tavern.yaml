@@ -55,7 +55,7 @@ stages:
 
 # TODO: add checking of error response JSON text
 
-test_name: HMNFD /params error PATCH test
+test_name: HMNFD /params API negative test
 
 stages:
 
