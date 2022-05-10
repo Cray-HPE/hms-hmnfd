@@ -12,8 +12,9 @@
 
 
 test_name: HMNFD subscribe, subscriptions API test
-includes:
-  - !include common.yaml
+#TODO
+#includes:
+#  - !include common.yaml
 
 stages:
   - name: Read back empty subscription

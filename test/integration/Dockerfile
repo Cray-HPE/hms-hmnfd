@@ -22,10 +22,8 @@
 
 FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.0.0
 
-COPY smoke/ /src/app
-# No CT functional tests yet
-#COPY functional/ /src/app
-COPY tavern_global_config_ct_test.yaml /src/app/tavern_global_config_ct_test.yaml
+COPY tavern/ /src/app
+COPY tavern_global_config_integration_test.yaml /src/app/tavern_global_config_integration_test.yaml
 
 ENV PATH="/src/libs:${PATH}"
 ENV PATH="/src/app:${PATH}"

@@ -6,11 +6,8 @@
 #
 # Required to run: hmnfd only.
 # Destructive: YES
-# 
 
 test_name: HMNFD /params API test
-includes:
-  - !include common.yaml
 
 stages:
   - name: Testing /params API PATCH/GET test
@@ -24,7 +21,7 @@ stages:
         Nosm: 1
         SM_retries: 4
         SM_timeout: 11
-        SM_url: http://localhost:27999/hsm/v1
+        SM_url: http://localhost:27999/hsm/v2
         Telemetry_host: localhost:9092:notifications
         Use_telemetry: 0
     response:
@@ -37,25 +34,28 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Debug: 3
         KV_url: http://localhost:2379
         Nosm: 1
         Port: !anyint
         SM_retries: 4
         SM_timeout: 11
-        SM_url: http://localhost:27999/hsm/v1
-        Scn_in_url: !anystr
-        Telemetry_host: !anystr
+        SM_url: http://localhost:27999/hsm/v2
+        Telemetry_host: localhost:9092:notifications
         Use_telemetry: 0
+        #TODO: these are new
+        Scn_in_url: http://cray-hmnfd:28600/hmi/v1/scn
+        Scn_backoff: 1
+        Scn_cache_delay: 5
+        Scn_max_cache: 100
+        Scn_retries: 5
 
 ---
 
 # TODO: add checking of error response JSON text
 
 test_name: HMNFD /params error PATCH test
-includes:
-  - !include common.yaml
 
 stages:
 
@@ -158,5 +158,3 @@ stages:
         Use_telemetry: "1"
     response:
       status_code: 400
-     
-

@@ -7,6 +7,6 @@ services:
   unit-tests:
     build:
       context: .
-      dockerfile: Dockerfile.testing.Dockerfile
+      dockerfile: Dockerfile.testing.unit.Dockerfile
     networks:
       - hmnfd
