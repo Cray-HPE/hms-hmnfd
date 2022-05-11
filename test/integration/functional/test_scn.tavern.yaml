@@ -281,4 +281,15 @@ stages:
         SubRole: "ncn-w"
         Timestamp: !anystr
 
-#TODO: Clean up, need to delete all SCN subscriptions that were created
+#TODO: clean up, delete all SCN subscriptions that were created
+
+#  - name: Clean up.  Delete the SCN subscriptions
+#    request:
+#      url: "{hmnfd_base_url}/hmi/v1/subscribe"
+#      verify: False
+#      method: DELETE
+#      json:
+#        Subscriber: "node_emu@x100c1s2b0n3"
+#        Url: "http://x100c1s2b0n3.local:5678/scn_ep"
+#    response:
+#      status_code: 200

@@ -3,7 +3,7 @@
 name: tavern_global_configuration #is this needed, used?
 description: common configuration for all tavern invocations
 variables:
-  verify: false #should ssl verification happen in tavern tests? its hard coded everywhere to false (partially because the PIT would complain)
+  verify: false
   hmnfd_base_url: http://cray-hmnfd:28600
   n0_sub_url: http://fake_subscriber_a:20999/x0c0s0b0n0
   n1_sub_url: http://fake_subscriber_b:20998/x0c0s0b0n1

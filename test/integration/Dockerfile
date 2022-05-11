@@ -22,7 +22,7 @@
 
 FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.0.0
 
-COPY tavern/ /src/app
+COPY functional/ /src/app
 COPY tavern_global_config_integration_test.yaml /src/app/tavern_global_config_integration_test.yaml
 
 ENV PATH="/src/libs:${PATH}"
