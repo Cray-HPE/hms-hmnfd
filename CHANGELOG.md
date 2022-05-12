@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
-## [1.14.0] - 2022-05-12
+## [1.15.0] - 2022-05-12
 
 ### Changed
 
@@ -17,6 +17,13 @@ These are changes to charts in support of:
 - Pull images from artifactory.algol60.net instead of arti.dev.cray.com.
 - Added a runCT.sh script that can run the CT tests in a docker-compose environment.
 - Refactored runIntegration.sh and the disruptive Tavern integration tests.
+
+## [1.14.0] - 2021-12-20
+
+### Changed
+
+- Documentation changes
+- Fixed integration test issue with python
 
 ## [1.13.0] - 2021-12-20
 
@@ -62,27 +69,27 @@ These are changes to charts in support of:
 
 ## [1.9.5] - 2021-08-05
 
-### Changed 
+### Changed
 
 - Added missing time stamps to Kafka telemetry SCNs.
 
 ## [1.9.4] - 2021-07-30
 
-### Changed 
+### Changed
 
 - Added 'smart delays' between SCN send retries, and made the retry backoff and number of retries changeable on the fly.
 
 ## [1.9.3] - 2021-07-26
 
-### Changed 
+### Changed
 
 - Phase 3 of Github migration.
 
 ## [1.9.2] - 2021-07-22
 
-### Changed 
+### Changed
 
-- Add GH pipeline build support. 
+- Add GH pipeline build support.
 
 ## [1.9.1] - 2021-07-12
 
@@ -177,7 +184,7 @@ These are changes to charts in support of:
 
 ## [1.4.0] - 2020-06-26
 
-- Bumped the base chart to 1.11.1 for ETCD improvements. Updated istio pod annotation to exclude ETCD. 
+- Bumped the base chart to 1.11.1 for ETCD improvements. Updated istio pod annotation to exclude ETCD.
 
 ## [1.3.5] - 2020-06-12
 
