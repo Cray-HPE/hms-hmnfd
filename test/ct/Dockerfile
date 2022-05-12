@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,32 +20,19 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building Cray-HPE NFD (Node Fanout Daemon).
+FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.0.0
 
-### build-base stage ###
-# Build base just has the packages installed we need.
-FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
+COPY smoke/ /src/app
+# No CT functional tests yet
+#COPY functional/ /src/app
+COPY tavern_global_config_ct_test.yaml /src/app/tavern_global_config_ct_test.yaml
 
-RUN set -ex \
-    && apk -U upgrade \
-    && apk add build-base
+ENV PATH="/src/libs:${PATH}"
+ENV PATH="/src/app:${PATH}"
 
+USER root
+RUN chown -R 65534:65534 /src
+USER 65534:65534
 
-### base stage ###
-# Base copies in the files we need to test/build.
-FROM build-base AS base
-
-RUN go env -w GO111MODULE=auto
-
-# Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
-
-
-### Unit Test Stage ###
-FROM base AS testing
-
-# Run unit tests...
-RUN set -ex \
-    && go clean -testcache \
-    && go test -cover -tags musl -v github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
+# this is inherited from the hms-test container
+ENTRYPOINT [ "entrypoint.sh" ]

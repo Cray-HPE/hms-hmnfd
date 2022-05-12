@@ -29,7 +29,7 @@ FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
 RUN go env -w GO111MODULE=auto
 
-COPY Test/fake-hsm/fake-hsm.go ${GOPATH}/src/fake-hsm/
+COPY test/fake-hsm/fake-hsm.go ${GOPATH}/src/fake-hsm/
 
 RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-hsm fake-hsm
 

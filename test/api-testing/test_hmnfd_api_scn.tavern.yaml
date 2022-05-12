@@ -136,7 +136,7 @@ stages:
     response:
       status_code: 200
 
-############# Test n1 delivery
+############# test n1 delivery
 
   - name: Throw SCN with state change to Ready.  Should be seen only by n1
     request:

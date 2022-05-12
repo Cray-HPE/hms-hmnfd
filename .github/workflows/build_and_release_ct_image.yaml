@@ -8,8 +8,8 @@ jobs:
     uses: Cray-HPE/hms-build-image-workflows/.github/workflows/build_and_release_image.yaml@v1
     with:
       image-name: cray-hmnfd-test
-      docker-build-file: Test/ct/Dockerfile
-      docker-build-context: Test/ct
+      docker-build-file: test/ct/Dockerfile
+      docker-build-context: test/ct
       enable-pr-comment: true
     secrets:
       artifactory-username: ${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}

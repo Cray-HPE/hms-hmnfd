@@ -20,39 +20,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for running API/functional TAVERN-based tests.
+# Dockerfile for building HMS fake node/SCN subscriber for testing.
 # Author: mpkelly
 # Date: 12-February 2019
 
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
+
+RUN go env -w GO111MODULE=auto
+
+COPY fake-subscriber.go ${GOPATH}/src/fake-subscriber/
+
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
+
+### Final Stage ###
+
 FROM artifactory.algol60.net/docker.io/alpine:3.15
 LABEL maintainer="Hewlett Packard Enterprise"
+STOPSIGNAL SIGTERM
 
-# Make sure python, pip, and tavern are installed.  Also 'curl' for testing.
+# Copy the final binary.  
 
-# NOTE: Do NOT install pytest!  Installing pytest goofs stuff up so that
-# Tavern won't find the specified .yaml files no matter how loudly you tell
-# it where they are.
+COPY --from=builder /usr/local/bin/fake-subscriber /usr/local/bin
 
-# NOTE: Pin pykwalify to v1.7.0 since the v1.8.0 version introduced changes
-# that are not backwards compatible with the version of pytest we are using.
+# Run the fake-subscriber daemon.  Env vars come from the .yaml file.
 
-RUN set -ex \
-    && apk -U upgrade \
-    && apk add --no-cache \
-        python3 \
-        py3-pip \
-        curl \
-    && pip3 install --upgrade pip \
-    && pip3 install pykwalify==1.7.0 \
-    && pip3 install tavern==0.34.0
-
-COPY Test/api-testing/*.yaml /usr/local/bin/
-COPY Test/api-testing/*.sh /usr/local/bin/
-
-# Run the tests.  We'll do it this way rather then CMD, so that the
-# unit test script can just do a 'docker build' rather than building
-# and then running.  This way the build runs the Tavern tests and the
-# unit test script can look at the result of the test run.  Running
-# the container won't do that for us.
-
-RUN runTavernTests.sh
+CMD ["sh", "-c", "fake-subscriber"]
