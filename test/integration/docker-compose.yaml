@@ -34,7 +34,7 @@ services:
       - SUBROLES=ncn-w
       - ENABLED=1
       - NFDSUBURL=http://cray-hmnfd:28600/hmi/v1/subscribe
-      - FAKEHOST=fake_subscriber_a
+      - FAKEHOST=fakesub_a
     networks:
       - hmnfd
   fakesub_b:
@@ -47,7 +47,7 @@ services:
       - SUBNODES=x0c0s0b0n3,x0c0s0b0n4
       - SUBSTATES=Ready
       - NFDSUBURL=http://cray-hmnfd:28600/hmi/v1/subscribe
-      - FAKEHOST=fake_subscriber_b
+      - FAKEHOST=fakesub_b
     networks:
       - hmnfd
   cray-hmnfd:
