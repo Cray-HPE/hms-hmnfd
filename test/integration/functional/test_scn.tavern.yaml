@@ -88,7 +88,7 @@ stages:
         State: "On"
     response:
       status_code: 200
-    delay_after: 10 
+    delay_after: 10
 
   - name: Query subscriber n0 to verify correct SCN was delivered to n0
     request:
@@ -281,4 +281,26 @@ stages:
         SubRole: "ncn-w"
         Timestamp: !anystr
 
-#TODO: Clean up, need to delete all SCN subscriptions that were created
+# clean up, delete all SCN subscriptions that were created
+
+  - name: Clean up, delete the first SCN subscription created
+    request:
+      url: "{hmnfd_base_url}/hmi/v1/subscribe"
+      verify: False
+      method: DELETE
+      json:
+        Subscriber: "nodeemulator@x0c0s0b0n0"
+        Url: "http://fakesub_a:20999/x0c0s0b0n0/scn"
+    response:
+      status_code: 200
+
+  - name: Clean up, delete the second SCN subscription created
+    request:
+      url: "{hmnfd_base_url}/hmi/v1/subscribe"
+      verify: False
+      method: DELETE
+      json:
+        Subscriber: "nodeemulator@x0c0s0b0n1"
+        Url: "http://fakesub_b:20998/x0c0s0b0n1/scn"
+    response:
+      status_code: 200
