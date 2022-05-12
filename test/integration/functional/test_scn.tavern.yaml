@@ -189,7 +189,7 @@ stages:
     response:
       status_code: 200
 
-# set node x0c0s0b0n3 to Ready and AdminDown, both should get the SCN
+  # set node x0c0s0b0n3 to Ready and AdminDown, both should get the SCN
 
   - name: Throw SCN with state change to Ready and AdminDown, node x0c0s0b0n3.  Should be seen only by both nodes
     request:
@@ -253,7 +253,7 @@ stages:
     response:
       status_code: 200
 
-# set node x0c0s0b0n0 to SubRole ncn-w, it should get the SCN
+  # set node x0c0s0b0n0 to SubRole ncn-w, it should get the SCN
 
   - name: Throw SCN with SubRole change to ncn-w, node x0c0s0b0n0.  Should be seen only by that node
     request:
@@ -281,7 +281,7 @@ stages:
         SubRole: "ncn-w"
         Timestamp: !anystr
 
-# clean up, delete all SCN subscriptions that were created
+############# clean up, delete all SCN subscriptions that were created
 
   - name: Clean up, delete the first SCN subscription created
     request:
