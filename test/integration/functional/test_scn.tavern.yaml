@@ -41,12 +41,7 @@
 #   are not populated; check the return headers; check RFC7808 stuff; etc.
 # o Maybe use some of the fancy tavern stuff to reduce YAML bloat
 
-
-
-
 test_name: HMNFD /scn API test
-includes:
-  - !include common.yaml
 
 stages:
   - name: Clear out last SCN records from n0
@@ -83,7 +78,7 @@ stages:
 
   - name: Throw SCN with state change to On.  Should be seen only by n0
     request:
-      url: "{hmnfd_url}/v1/scn"
+      url: "{hmnfd_base_url}/hmi/v1/scn"
       verify: False
       method: POST
       json:
@@ -93,7 +88,7 @@ stages:
         State: "On"
     response:
       status_code: 200
-    delay_after: 10 
+    delay_after: 10
 
   - name: Query subscriber n0 to verify correct SCN was delivered to n0
     request:
@@ -102,11 +97,12 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components:
           - "x1c0s0b0n0"
           - "x1c0s0b0n1"
         State: "On"
+        Timestamp: !anystr
          
   - name: Query subscriber n1 to verify nothing was delivered to n1
     request:
@@ -115,10 +111,10 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components: null
 
-############# clean out  last scn records
+############# clean out last scn records
 
   - name: Clear out last SCN records from n0
     request:
@@ -136,11 +132,11 @@ stages:
     response:
       status_code: 200
 
-############# Test n1 delivery
+############# test n1 delivery
 
   - name: Throw SCN with state change to Ready.  Should be seen only by n1
     request:
-      url: "{hmnfd_url}/v1/scn"
+      url: "{hmnfd_base_url}/hmi/v1/scn"
       verify: False
       method: POST
       json:
@@ -159,10 +155,11 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components:
           - "x0c0s0b0n4"
         State: "Ready"
+        Timestamp: !anystr
          
   - name: Query subscriber n0 to verify nothing was delivered to n0
     request:
@@ -171,10 +168,10 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components: null
 
-############# clean out  last scn records
+############# clean out last scn records
 
   - name: Clear out last SCN records from n0
     request:
@@ -192,11 +189,11 @@ stages:
     response:
       status_code: 200
 
-# set node x0c0s0b0n3 to Ready and AdminDown, both should get the SCN
+  # set node x0c0s0b0n3 to Ready and AdminDown, both should get the SCN
 
   - name: Throw SCN with state change to Ready and AdminDown, node x0c0s0b0n3.  Should be seen only by both nodes
     request:
-      url: "{hmnfd_url}/v1/scn"
+      url: "{hmnfd_base_url}/hmi/v1/scn"
       verify: False
       method: POST
       json:
@@ -216,11 +213,13 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components:
           - "x0c0s0b0n3"
           - "x0c0s0b0n1"
+        State: "Ready"
         SoftwareStatus: "AdminDown"
+        Timestamp: !anystr
          
   - name: Query subscriber n1 to verify SCN was delivered to n1, Ready, x0c0s0b0n3 only
     request:
@@ -229,12 +228,14 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components:
           - "x0c0s0b0n3"
         State: "Ready"
+        SoftwareStatus: "AdminDown"
+        Timestamp: !anystr
 
-############# clean out  last scn records
+############# clean out last scn records
 
   - name: Clear out last SCN records from n0
     request:
@@ -252,11 +253,11 @@ stages:
     response:
       status_code: 200
 
-# set node x0c0s0b0n0 to SubRole ncn-w, it should get the SCN
+  # set node x0c0s0b0n0 to SubRole ncn-w, it should get the SCN
 
   - name: Throw SCN with SubRole change to ncn-w, node x0c0s0b0n0.  Should be seen only by that node
     request:
-      url: "{hmnfd_url}/v1/scn"
+      url: "{hmnfd_base_url}/hmi/v1/scn"
       verify: False
       method: POST
       json:
@@ -274,9 +275,32 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Components:
           - "x0c0s0b0n0"
         SubRole: "ncn-w"
-         
+        Timestamp: !anystr
 
+############# clean up, delete all SCN subscriptions that were created
+
+  - name: Clean up, delete the first SCN subscription created
+    request:
+      url: "{hmnfd_base_url}/hmi/v1/subscribe"
+      verify: False
+      method: DELETE
+      json:
+        Subscriber: "nodeemulator@x0c0s0b0n0"
+        Url: "http://fakesub_a:20999/x0c0s0b0n0/scn"
+    response:
+      status_code: 200
+
+  - name: Clean up, delete the second SCN subscription created
+    request:
+      url: "{hmnfd_base_url}/hmi/v1/subscribe"
+      verify: False
+      method: DELETE
+      json:
+        Subscriber: "nodeemulator@x0c0s0b0n1"
+        Url: "http://fakesub_b:20998/x0c0s0b0n1/scn"
+    response:
+      status_code: 200

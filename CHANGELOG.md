@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.15.0] - 2022-05-12
+
+### Changed
+
+- Updated HMNFD to build using GitHub Actions instead of Jenkins.
+- Pull images from artifactory.algol60.net instead of arti.dev.cray.com.
+- Added a runCT.sh script that can run the CT tests in a docker-compose environment.
+- Refactored runIntegration.sh and the disruptive Tavern integration tests.
+
 ## [1.14.0] - 2021-12-20
 
 ### Changed
@@ -20,7 +29,7 @@ These are changes to charts in support of:
 
 ### Added
 
-- Now uses latest version of hms-msgbus, which now uses Confluent kafka interface
+- Now uses latest version of hms-msgbus, which now uses Confluent kafka interface.
 
 ## [1.12.0] - 2021-11-09
 

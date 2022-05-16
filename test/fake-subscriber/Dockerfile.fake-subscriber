@@ -1,8 +1,6 @@
-#!/bin/sh
-
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,40 +20,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# This script is included in the tavern test container built by
-# Dockerfile.hmi-nfd-taverntest.  It runs all of the TAVERN-based
-# tests for hmnfd API and functional testing using a docker-compose
-# container set containing:
+# Dockerfile for building HMS fake node/SCN subscriber for testing.
+# Author: mpkelly
+# Date: 12-February 2019
 
-YAMLDIR=/usr/local/bin
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
-echo "Copying YAML files..."
-cp ${YAMLDIR}/*.yaml .
+RUN go env -w GO111MODULE=auto
 
-# run /params test
+COPY fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
-pytest ./test_hmnfd_api_params.tavern.yaml 
-if [ $? -ne 0 ]; then
-    echo " "
-    echo ">>>>> ERROR: /params API test failed! <<<<<<<<<"
-    exit 1
-fi
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
 
-# run /subscribe and /subscriptions test
+### Final Stage ###
 
-pytest ./test_hmnfd_api_subscribe.tavern.yaml 
-if [ $? -ne 0 ]; then
-    echo " "
-    echo ">>>>> ERROR: /subscribe, /subscriptions API test failed! <<<<<<<<<"
-    exit 1
-fi
+FROM artifactory.algol60.net/docker.io/alpine:3.15
+LABEL maintainer="Hewlett Packard Enterprise"
+STOPSIGNAL SIGTERM
 
-# run /scn test
+# Copy the final binary.  
 
-pytest ./test_hmnfd_api_scn.tavern.yaml 
-if [ $? -ne 0 ]; then
-    echo " "
-    echo ">>>>> ERROR: /scn API test failed! <<<<<<<<<"
-    exit 1
-fi
+COPY --from=builder /usr/local/bin/fake-subscriber /usr/local/bin
 
+# Run the fake-subscriber daemon.  Env vars come from the .yaml file.
+
+CMD ["sh", "-c", "fake-subscriber"]

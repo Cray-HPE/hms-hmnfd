@@ -1,3 +1,5 @@
 *.logs
 kubernetes/.packaged
 kubernetes/cray-hms-hmnfd/charts
+.idea
+test/integration/configs

@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-#
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,13 +21,12 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
-#
-set -x
 
+set -x
 
 # Configure docker compose
 export COMPOSE_PROJECT_NAME=$RANDOM
-export COMPOSE_FILE=docker-compose.test.unit.yaml
+export COMPOSE_FILE=docker-compose.test.ct.yaml
 
 echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
 echo "COMPOSE_FILE: $COMPOSE_FILE"
@@ -36,7 +34,7 @@ echo "COMPOSE_FILE: $COMPOSE_FILE"
 
 function cleanup() {
   docker-compose down
-  if ! [[ $? -eq 0 ]]; then
+  if [[ $? -ne 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
   fi
@@ -44,18 +42,34 @@ function cleanup() {
 }
 
 
+# Get the base containers running
 echo "Starting containers..."
-docker-compose build  --no-cache
-docker-compose up --exit-code-from unit-tests unit-tests
+docker-compose build --no-cache
+docker-compose up -d cray-hmnfd #this will stand up everything except for the integration test container
 
+# Run the CT smoke tests
+docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
 test_result=$?
-
-# Clean up
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
-  echo "Unit tests FAILED!"
+  echo "CT smoke tests FAILED!"
   cleanup 1
 fi
 
-echo "Unit tests PASSED!"
+# No CT functional tests yet
+#docker-compose up -d ct-tests-functional-wait-for-smd
+#docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
+#docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
+
+#docker-compose up --exit-code-from ct-tests-functional ct-tests-functional
+#test_result=$?
+# Clean up
+#echo "Cleaning up containers..."
+#if [[ $test_result -ne 0 ]]; then
+#  echo "CT functional tests FAILED!"
+#  cleanup 1
+#fi
+
+# Cleanup
+echo "CT tests PASSED!"
 cleanup 0

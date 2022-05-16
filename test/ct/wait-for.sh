@@ -1,6 +1,8 @@
+#!/bin/bash
+
 # MIT License
 #
-# (C) Copyright [2019-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,31 +22,27 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS fake State Manager for testing.
-# Author: mpkelly
-# Date: 12-February 2019
+# wait-for.sh; used by runCT.sh to make sure HSM has been populated with data before running.
+echo "Initiating..."
+URL="http://cray-smd:27779/hsm/v2/State/Components"
+sentry=1
+limit=200
+while :; do
+  length=$(curl --silent ${URL} | jq '.Components | length')
 
-# Base image contains everything needed for Go building, just build.
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS builder
+  if [ ! -z "$length" ] && [ "$length" -gt "0" ]; then
+    echo $URL" is available"
+    break
+  fi
 
-RUN go env -w GO111MODULE=auto
+  if [ "$sentry" -gt "$limit" ]; then
+    echo "Failed to connect for $limit, exiting"
+    exit 1
+  fi
 
-COPY Test/fake-hsm/fake-hsm.go ${GOPATH}/src/fake-hsm/
+  ((sentry++))
 
-RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-hsm fake-hsm
+  echo $URL" is unavailable - sleeping"
+  sleep 1
 
-### Final Stage ###
-
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
-LABEL maintainer="Hewlett Packard Enterprise"
-STOPSIGNAL SIGTERM
-
-ENV PORT=27999
-
-# Copy the final binary.
-
-COPY --from=builder /usr/local/bin/fake-hsm /usr/local/bin
-
-# Run the fake State Mgr daemon
-
-CMD ["sh", "-c", "fake-hsm"]
+done

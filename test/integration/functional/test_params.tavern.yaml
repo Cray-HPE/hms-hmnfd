@@ -6,16 +6,13 @@
 #
 # Required to run: hmnfd only.
 # Destructive: YES
-# 
 
 test_name: HMNFD /params API test
-includes:
-  - !include common.yaml
 
 stages:
   - name: Testing /params API PATCH/GET test
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
@@ -24,7 +21,7 @@ stages:
         Nosm: 1
         SM_retries: 4
         SM_timeout: 11
-        SM_url: http://localhost:27999/hsm/v1
+        SM_url: http://localhost:27999/hsm/v2
         Telemetry_host: localhost:9092:notifications
         Use_telemetry: 0
     response:
@@ -32,131 +29,187 @@ stages:
 
   - name: Testing /params API Debug GET
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         Debug: 3
         KV_url: http://localhost:2379
         Nosm: 1
         Port: !anyint
         SM_retries: 4
         SM_timeout: 11
-        SM_url: http://localhost:27999/hsm/v1
-        Scn_in_url: !anystr
-        Telemetry_host: !anystr
+        SM_url: http://localhost:27999/hsm/v2
+        Telemetry_host: localhost:9092:notifications
         Use_telemetry: 0
+        Scn_in_url: http://cray-hmnfd:28600/hmi/v1/scn
+        Scn_backoff: 1
+        Scn_cache_delay: 5
+        Scn_max_cache: 100
+        Scn_retries: 5
 
 ---
 
-# TODO: add checking of error response JSON text
-
-test_name: HMNFD /params error PATCH test
-includes:
-  - !include common.yaml
+test_name: HMNFD /params API negative test
 
 stages:
 
   - name: Bad PATCH Debug wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Debug: "1"
     response:
       status_code: 400
-     
+      json:
+        detail: "Invalid data type in Debug field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
+
   - name: Bad PATCH KV_url wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         KV_url: 1234
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in KV_url field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
      
   - name: Bad PATCH Nosm wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Nosm: "1"
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in Nosm field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
 
   - name: Bad PATCH Port wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Port: "1234"
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in Port field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
 
   - name: Bad PATCH SM_retries wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         SM_retries: "12"
     response:
       status_code: 400
+      json:
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
  
   - name: Bad PATCH SM_timeout wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         SM_timeout: "20"
     response:
       status_code: 400
+      json:
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
 
   - name: Bad PATCH SM_url wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         SM_url: 1234
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in SM_url field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
  
   - name: Bad PATCH Scn_in_url wrong data type/not allowed
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Scn_in_url: 1234
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in Scn_in_url field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
  
   - name: Bad PATCH Telemetry_host wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Telemetry_host: 1234
     response:
       status_code: 400
+      json:
+        detail: "Invalid data type in Telemetry_host field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"
 
   - name: Bad PATCH Use_telemetry wrong data type
     request:
-      url: "{hmnfd_url}/v1/params"
+      url: "{hmnfd_base_url}/hmi/v1/params"
       verify: False
       method: PATCH
       json:
         Use_telemetry: "1"
     response:
       status_code: 400
-     
-
+      json:
+        detail: "Invalid data type in Use_telemetry field. "
+        instance: "/params"
+        status: 400
+        title: "Invalid Request"
+        type: "about:blank"

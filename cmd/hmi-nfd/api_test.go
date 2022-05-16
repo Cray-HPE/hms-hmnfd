@@ -24,13 +24,13 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"crypto/tls"
 	"sort"
 	"testing"
 	"time"
@@ -239,7 +239,7 @@ func TestScnHandler(t *testing.T) {
 		scnWorkPool = base.NewWorkerPool(10, 10)
 		scnWorkPool.Run()
 	}
-	if (!gofuncsRunning) {
+	if !gofuncsRunning {
 		go handleSCNs()
 		go checkSCNCache()
 	}
@@ -292,7 +292,7 @@ func TestScnHandler(t *testing.T) {
 		t.Errorf("POST operation failed, got response code %v\n", rr1.Code)
 	}
 
-	//Test invalid operations
+	//test invalid operations
 
 	req2_payload := bytes.NewBufferString("")
 	req2, err2 := http.NewRequest("PATCH", "http://localhost:8080/hmnfd/v1/scn",
@@ -340,54 +340,54 @@ func TestScnHandler(t *testing.T) {
 func subscriberSCNHandler(w http.ResponseWriter, req *http.Request) {
 	var jdata Scn
 
-	body,err := ioutil.ReadAll(req.Body)
-	if (err != nil) {
-		log.Printf("ERROR subscriberSCNHandler() reading request body: %v",err)
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		log.Printf("ERROR subscriberSCNHandler() reading request body: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = json.Unmarshal(body,&jdata)
-	if (err != nil) {
-		log.Printf("ERROR subscriberSCNHandler() unmarshaling json body: %v",err)
+	err = json.Unmarshal(body, &jdata)
+	if err != nil {
+		log.Printf("ERROR subscriberSCNHandler() unmarshaling json body: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	scnsRcv = append(scnsRcv,jdata)
+	scnsRcv = append(scnsRcv, jdata)
 	w.WriteHeader(http.StatusOK)
 }
 
-func scnCompare(sent,rcv []Scn) string {
-	if (len(sent) != len(rcv)) {
+func scnCompare(sent, rcv []Scn) string {
+	if len(sent) != len(rcv) {
 		return fmt.Sprintf("SCN sent/rcv length mismatch: %d/%d",
-					len(sent),len(rcv))
+			len(sent), len(rcv))
 	}
 
-	for ix := 0; ix < len(sent); ix ++ {
+	for ix := 0; ix < len(sent); ix++ {
 		enbls := (sent[ix].Enabled != nil) && (*sent[ix].Enabled != false)
 		enblr := (rcv[ix].Enabled != nil) && (*rcv[ix].Enabled != false)
 
-		if ((sent[ix].State != rcv[ix].State) ||
-		    (sent[ix].Flag != rcv[ix].Flag) ||
-		    (sent[ix].SoftwareStatus != rcv[ix].SoftwareStatus) ||
-		    (enbls != enblr) ||
-		    (sent[ix].Role != rcv[ix].Role)) {
+		if (sent[ix].State != rcv[ix].State) ||
+					(sent[ix].Flag != rcv[ix].Flag) ||
+					(sent[ix].SoftwareStatus != rcv[ix].SoftwareStatus) ||
+					(enbls != enblr) ||
+					(sent[ix].Role != rcv[ix].Role) {
 			return fmt.Sprintf("SCN mismatch: sent: '%v', rcv: '%v'",
-						sent[ix],rcv[ix])
+				sent[ix], rcv[ix])
 		}
 
-		if (len(sent[ix].Components) != len(rcv[ix].Components)) {
+		if len(sent[ix].Components) != len(rcv[ix].Components) {
 			return fmt.Sprintf("SCN mismatch, sent/rcv component counts: %d/%d, sent: '%v'",
-						len(sent[ix].Components),len(rcv[ix].Components),
-						sent[ix])
+				len(sent[ix].Components), len(rcv[ix].Components),
+				sent[ix])
 		}
 
 		sort.Strings(sent[ix].Components)
 		sort.Strings(rcv[ix].Components)
-		for iy := 0; iy < len(sent[ix].Components); iy ++ {
-			if (sent[ix].Components[iy] != rcv[ix].Components[iy]) {
+		for iy := 0; iy < len(sent[ix].Components); iy++ {
+			if sent[ix].Components[iy] != rcv[ix].Components[iy] {
 				return fmt.Sprintf("SCN component mismatch, sent/rcv: '%v'/'%v'",
-							sent[ix].Components,rcv[ix].Components)
+					sent[ix].Components, rcv[ix].Components)
 			}
 		}
 	}
@@ -426,11 +426,11 @@ func TestScnHandler2(t *testing.T) {
 		scnWorkPool = base.NewWorkerPool(10, 10)
 		scnWorkPool.Run()
 	}
-	if (!gofuncsRunning) {
+	if !gofuncsRunning {
 		go handleSCNs()
 		go checkSCNCache()
 	}
-	if (htrans.transport == nil) {
+	if htrans.transport == nil {
 		htrans.transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
@@ -454,9 +454,9 @@ func TestScnHandler2(t *testing.T) {
 	nwpServer := httptest.NewServer(http.HandlerFunc(subscriberSCNHandler))
 
 	subdata.Url = nwpServer.URL
-	for ix := 0; ix < 20; ix ++ {
-		snode := fmt.Sprintf("x%dc0s0b0n0",ix)
-		subdata.ScnNodes = append(subdata.ScnNodes,snode)
+	for ix := 0; ix < 20; ix++ {
+		snode := fmt.Sprintf("x%dc0s0b0n0", ix)
+		subdata.ScnNodes = append(subdata.ScnNodes, snode)
 	}
 	ba, baerr := json.Marshal(subdata)
 	if baerr != nil {
@@ -482,18 +482,18 @@ func TestScnHandler2(t *testing.T) {
 	scnsRcv = []Scn{}
 	scnList = []Scn{}
 	hsmscn.Components = []string{}
-	scnList = append(scnList,Scn{State: "Ready",})
-	for ix := 0; ix < 2; ix ++ {
-		cmp := fmt.Sprintf("x%dc0s0b0n0",ix)
-		hsmscn.Components = []string{cmp,}
+	scnList = append(scnList, Scn{State: "Ready"})
+	for ix := 0; ix < 2; ix++ {
+		cmp := fmt.Sprintf("x%dc0s0b0n0", ix)
+		hsmscn.Components = []string{cmp}
 		hsmscn.State = "Ready"
-		scnList[0].Components = append(scnList[0].Components,cmp)
-		sendScn(t,hsmscn)
+		scnList[0].Components = append(scnList[0].Components, cmp)
+		sendScn(t, hsmscn)
 	}
 	time.Sleep(12 * time.Second)
-	cmpStr = scnCompare(scnList,scnsRcv)
-	if (cmpStr != "") {
-		t.Errorf("SCN Miscompare: %s",cmpStr)
+	cmpStr = scnCompare(scnList, scnsRcv)
+	if cmpStr != "" {
+		t.Errorf("SCN Miscompare: %s", cmpStr)
 	}
 
 	//2. 5 SCNs of the same type, cache (of 4) send, then single cached send.  
@@ -501,28 +501,28 @@ func TestScnHandler2(t *testing.T) {
 	hsmscn.Components = []string{}
 	scnsRcv = []Scn{}
 	scnList = []Scn{}
-	scnList = append(scnList,Scn{State: "Ready",})
-	for ix := 0; ix < 5; ix ++ {
-		cmp := fmt.Sprintf("x%dc0s0b0n0",ix)
-		hsmscn.Components = []string{cmp,}
+	scnList = append(scnList, Scn{State: "Ready"})
+	for ix := 0; ix < 5; ix++ {
+		cmp := fmt.Sprintf("x%dc0s0b0n0", ix)
+		hsmscn.Components = []string{cmp}
 		hsmscn.State = "Ready"
-		sendScn(t,hsmscn)
+		sendScn(t, hsmscn)
 	}
-	for ix := 0; ix < 4; ix ++ {
-		cmp := fmt.Sprintf("x%dc0s0b0n0",ix)
-		scnList[0].Components = append(scnList[0].Components,cmp)
+	for ix := 0; ix < 4; ix++ {
+		cmp := fmt.Sprintf("x%dc0s0b0n0", ix)
+		scnList[0].Components = append(scnList[0].Components, cmp)
 	}
-	scnList = append(scnList,Scn{State: "Ready",})
-	scnList[1].Components = append(scnList[1].Components,"x4c0s0b0n0")
-	scnList[1].Components = append(scnList[1].Components,"x10c0s0b0n0")
+	scnList = append(scnList, Scn{State: "Ready"})
+	scnList[1].Components = append(scnList[1].Components, "x4c0s0b0n0")
+	scnList[1].Components = append(scnList[1].Components, "x10c0s0b0n0")
 
 	hsmscn.Components = []string{"x10c0s0b0n0"}
 	hsmscn.State = "Ready"
-	sendScn(t,hsmscn)
+	sendScn(t, hsmscn)
 	time.Sleep(10 * time.Second)
-	cmpStr = scnCompare(scnList,scnsRcv)
-	if (cmpStr != "") {
-		t.Errorf("SCN Miscompare: %s",cmpStr)
+	cmpStr = scnCompare(scnList, scnsRcv)
+	if cmpStr != "" {
+		t.Errorf("SCN Miscompare: %s", cmpStr)
 	}
 
 	//3. 2 SCNs of the same type, 1 SCN of a different type.  Cache send, 
@@ -531,23 +531,23 @@ func TestScnHandler2(t *testing.T) {
 	hsmscn.Components = []string{}
 	scnsRcv = []Scn{}
 	scnList = []Scn{}
-	scnList = append(scnList,Scn{State: "Ready",})
-	for ix := 0; ix < 2; ix ++ {
-		cmp := fmt.Sprintf("x%dc0s0b0n0",ix)
-		hsmscn.Components = []string{cmp,}
+	scnList = append(scnList, Scn{State: "Ready"})
+	for ix := 0; ix < 2; ix++ {
+		cmp := fmt.Sprintf("x%dc0s0b0n0", ix)
+		hsmscn.Components = []string{cmp}
 		hsmscn.State = "Ready"
-		scnList[0].Components = append(scnList[0].Components,cmp)
-		sendScn(t,hsmscn)
+		scnList[0].Components = append(scnList[0].Components, cmp)
+		sendScn(t, hsmscn)
 	}
 	hsmscn.Components = []string{"x10c0s0b0n0"}
 	hsmscn.State = "On"
-	scnList = append(scnList,Scn{State: "On",})
+	scnList = append(scnList, Scn{State: "On"})
 	scnList[1].Components = []string{"x10c0s0b0n0"}
-	sendScn(t,hsmscn)
+	sendScn(t, hsmscn)
 	time.Sleep(10 * time.Second)
-	cmpStr = scnCompare(scnList,scnsRcv)
-	if (cmpStr != "") {
-		t.Errorf("SCN Miscompare: %s",cmpStr)
+	cmpStr = scnCompare(scnList, scnsRcv)
+	if cmpStr != "" {
+		t.Errorf("SCN Miscompare: %s", cmpStr)
 	}
 
 	nwpServer.Close()
@@ -772,7 +772,7 @@ func TestPrune(t *testing.T) {
 
 	//Make sure the pruning loop is running.
 	go prune()
-	if (!gofuncsRunning) {
+	if !gofuncsRunning {
 		go handleSCNs()
 		go checkSCNCache()
 	}
@@ -897,7 +897,7 @@ func TestPrune(t *testing.T) {
 }
 
 func TestSendToTelemetryBus(t *testing.T) {
-	var scn,jdata Scn
+	var scn, jdata Scn
 	bt := true
 
 	app_params.Use_telemetry = 1
@@ -916,48 +916,46 @@ func TestSendToTelemetryBus(t *testing.T) {
 	scnStr := <-kq_chan
 	app_params.Use_telemetry = 0
 
-	err := json.Unmarshal([]byte(scnStr),&jdata)
-	if (err != nil) {
-		t.Errorf("ERROR unmarshalling SCN: %v",err)
+	err := json.Unmarshal([]byte(scnStr), &jdata)
+	if err != nil {
+		t.Errorf("ERROR unmarshalling SCN: %v", err)
 	}
-	if (len(jdata.Components) != len(scn.Components)) {
+	if len(jdata.Components) != len(scn.Components) {
 		t.Errorf("ERROR, num components mismatch: exp: %d, got: %d",
-			len(scn.Components),len(jdata.Components))
+			len(scn.Components), len(jdata.Components))
 	}
-	if (jdata.Components[0] != scn.Components[0]) {
+	if jdata.Components[0] != scn.Components[0] {
 		t.Errorf("ERROR, component name mismatch, exp: '%s', got '%s'",
-			scn.Components[0],jdata.Components[0])
+			scn.Components[0], jdata.Components[0])
 	}
-	if (jdata.Enabled == nil) {
+	if jdata.Enabled == nil {
 		t.Errorf("ERROR, Enabled is nil.")
 	}
-	if (*jdata.Enabled != true) {
+	if *jdata.Enabled != true {
 		t.Errorf("ERROR, Enabled is false.")
 	}
-	if (jdata.Flag != scn.Flag) {
+	if jdata.Flag != scn.Flag {
 		t.Errorf("ERROR, Flag mismatch, exp: '%s', got: '%s'",
-			scn.Flag,jdata.Flag)
+			scn.Flag, jdata.Flag)
 	}
-	if (jdata.Role != scn.Role) {
+	if jdata.Role != scn.Role {
 		t.Errorf("ERROR, Role mismatch, exp: '%s', got: '%s'",
-			scn.Role,jdata.Role)
+			scn.Role, jdata.Role)
 	}
-	if (jdata.SubRole != scn.SubRole) {
+	if jdata.SubRole != scn.SubRole {
 		t.Errorf("ERROR, RoleFlag mismatch, exp: '%s', got: '%s'",
-			scn.SubRole,jdata.SubRole)
+			scn.SubRole, jdata.SubRole)
 	}
-	if (jdata.SoftwareStatus != scn.SoftwareStatus) {
+	if jdata.SoftwareStatus != scn.SoftwareStatus {
 		t.Errorf("ERROR, SoftwareStatus mismatch, exp: '%s', got: '%s'",
-			scn.SoftwareStatus,jdata.SoftwareStatus)
+			scn.SoftwareStatus, jdata.SoftwareStatus)
 	}
-	if (jdata.State != scn.State) {
+	if jdata.State != scn.State {
 		t.Errorf("ERROR, State mismatch, exp: '%s', got: '%s'",
-			scn.State,jdata.State)
+			scn.State, jdata.State)
 	}
-	if (jdata.Timestamp != scn.Timestamp) {
+	if jdata.Timestamp != scn.Timestamp {
 		t.Errorf("ERROR, Timestamp mismatch, exp: '%s', got: '%s'",
-			scn.Timestamp,jdata.Timestamp)
+			scn.Timestamp, jdata.Timestamp)
 	}
 }
-
-

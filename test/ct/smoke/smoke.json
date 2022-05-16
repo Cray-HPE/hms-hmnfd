@@ -1,0 +1,76 @@
+{
+  "smoke_test_name": "hmnfd-smoke-tests",
+  "default_base_url": "http://cray-hmnfd/",
+  "test_paths": [
+    {
+      "path": "hmi/v1/health",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v1/liveness",
+      "expected_status_code": 204,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v1/readiness",
+      "expected_status_code": 204,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v1/subscriptions",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v1/params",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v2/health",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v2/liveness",
+      "expected_status_code": 204,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v2/readiness",
+      "expected_status_code": 204,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v2/subscriptions",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    },
+    {
+      "path": "hmi/v2/params",
+      "expected_status_code": 200,
+      "method": "GET",
+      "body": null,
+      "headers": {}
+    }
+  ]
+}
