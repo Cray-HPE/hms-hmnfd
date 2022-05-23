@@ -136,7 +136,7 @@ Usage: hmnfd [options]
   --sm_timeout=num        Seconds to wait on State Manager accesses. 
                               (Default: 3)
   --sm_url=url            State Manager base URL. 
-                              (Default: https://localhost:27999/hsm/v1)
+                              (Default: https://localhost:27999/hsm/v2)
   --telemetry_host=h:p:t  Hostname:port:topic  of telemetry service.
   --use_telemetry         Inject notifications onto telemetry bus (Default: no)
 
