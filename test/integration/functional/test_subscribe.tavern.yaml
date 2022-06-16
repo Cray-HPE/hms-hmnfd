@@ -270,7 +270,7 @@ stages:
       json:
         SubscriptionList: null
 
-  - name: Create subscription via the /subscriptions/{xname}/agents/{agent} API using POST
+  - name: Create subscription via the /subscriptions/xname/agents/agent API using POST
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/x0c1s2b0n3/agents/node_emu"
       verify: False
@@ -327,7 +327,7 @@ stages:
               - "ncn-m"
               - "ncn-w"
 
-  - name: Create 2nd subscription via the /subscriptions/{xname}/agents/{agent} API using POST
+  - name: Create 2nd subscription via the /subscriptions/xname/agents/agent API using POST
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/x100c1s2b0n3/agents/node_emu"
       verify: False
@@ -383,7 +383,7 @@ stages:
             States:
               - "ready"
 
-  - name: Modify a subscription via the /subscribe/{xname}/agents/{agent} API using PATCH
+  - name: Modify a subscription via the /subscribe/xname/agents/agent API using PATCH
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/x100c1s2b0n3/agents/node_emu"
       verify: False
