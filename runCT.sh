@@ -45,7 +45,7 @@ function cleanup() {
 # Get the base containers running
 echo "Starting containers..."
 docker-compose build --no-cache
-docker-compose up -d cray-hmnfd #this will stand up everything except for the integration test container
+docker-compose up -d cray-hmnfd
 
 # Run the CT smoke tests
 docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
