@@ -1033,7 +1033,7 @@ components:
         SM_url:
           description: URL used when contacting the Hardware State Manager
           type: string
-          default: 'https://localhost:27999/hsm/v1'
+          default: 'https://localhost:27999/hsm/v2'
           example: 'https://localhost:27999/hsms/v1'
         Telemetry_host:
           description: >-

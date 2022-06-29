@@ -1,17 +1,17 @@
 // MIT License
-// 
+//
 // (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -119,17 +119,17 @@ const (
 )
 
 const (
-	KV_URL_BASE      = "mem:"
-	SM_URL_BASE      = "https://localhost:27999/hsm/v1"
-	SM_SCN_SUB       = "Subscriptions/SCN"
-	SM_COMPINFO      = "Component/State"
-	SM_STATEDATA     = "State/Components"
-	SM_TIMEOUT       = 3
-	SM_RETRIES       = 3
-	SCN_MAX_CACHE    = 100
-	SCN_CACHE_DELAY  = 5
-	SCN_BACKOFF      = 1
-	SCN_RETRIES      = 5
+	KV_URL_BASE     = "mem:"
+	SM_URL_BASE     = "https://localhost:27999/hsm/v2"
+	SM_SCN_SUB      = "Subscriptions/SCN"
+	SM_COMPINFO     = "Component/State"
+	SM_STATEDATA    = "State/Components"
+	SM_TIMEOUT      = 3
+	SM_RETRIES      = 3
+	SCN_MAX_CACHE   = 100
+	SCN_CACHE_DELAY = 5
+	SCN_BACKOFF     = 1
+	SCN_RETRIES     = 5
 )
 
 const (
@@ -167,15 +167,15 @@ var app_params = opParams{
 	Scn_retries:     SCN_RETRIES,
 	SM_retries:      SM_RETRIES,
 	SM_timeout:      SM_TIMEOUT,
-	SM_url:          "https://localhost:27999/hsm/v1",
+	SM_url:          "https://localhost:27999/hsm/v2",
 	Telemetry_host:  "",
 	Use_telemetry:   0,
 }
 
 var server_url = urlDesc{url_prefix: URL_PREFIX, //https://
-	url_root:    URL_BASE,    //hmnfd
-	url_port:    URL_PORT,    //28600
-	url_version: URL_V2,      //v2
+	url_root:    URL_BASE, //hmnfd
+	url_port:    URL_PORT, //28600
+	url_version: URL_V2,   //v2
 	hostname:    "",
 	fdqn:        "",
 	full_url:    "",
@@ -413,7 +413,7 @@ func parseEnvVars() {
 
 	//Feature flags
 
-	__env_parse_int("HMNFD_FEATURE_XNAME_API",&featureFlag_xnameApiEnable)
+	__env_parse_int("HMNFD_FEATURE_XNAME_API", &featureFlag_xnameApiEnable)
 
 	//This one is undocumented and used for testing
 
@@ -763,12 +763,12 @@ func openKV() {
 		kvHandle, kverr = hmetcd.Open(app_params.KV_url, "")
 		if kverr != nil {
 			log.Printf("ERROR opening connection to ETCD (attempt %d): %v",
-				ix,kverr)
+				ix, kverr)
 		} else {
 			log.Printf("ETCD connection succeeded.\n")
 			break
 		}
-		ix ++
+		ix++
 		time.Sleep(5 * time.Second)
 	}
 
@@ -781,9 +781,9 @@ func openKV() {
 			log.Printf("K/V health check succeeded.\n")
 			break
 		}
-		log.Printf("ERROR: K/V health key store failed, attempt %d.",ix)
+		log.Printf("ERROR: K/V health key store failed, attempt %d.", ix)
 		time.Sleep(5 * time.Second)
-		ix ++
+		ix++
 	}
 }
 
@@ -808,7 +808,7 @@ func main() {
 		log.Printf("ERROR: can't get service/host name!  Using 'localhost'.\n")
 		serviceName = "localhost"
 	}
-	log.Printf("Service name: '%s'",serviceName)
+	log.Printf("Service name: '%s'", serviceName)
 
 	server_url.hostname = serviceName
 	server_url.full_url = server_url.url_prefix +
@@ -865,32 +865,32 @@ func main() {
 
 	log.Printf("Listening on port %d", server_url.url_port)
 	log.Printf("URLs:")
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SUBSCRIBE)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SCN)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_SUBSCRIPTIONS)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_PARAMS)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_LIVENESS)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_READINESS)
-	log.Printf("    %s",URL_DELIM + server_url.url_root +
-		URL_DELIM + server_url.url_version +
-		URL_DELIM + URL_HEALTH)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_SUBSCRIBE)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_SCN)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_SUBSCRIPTIONS)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_PARAMS)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_LIVENESS)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_READINESS)
+	log.Printf("    %s", URL_DELIM+server_url.url_root+
+		URL_DELIM+server_url.url_version+
+		URL_DELIM+URL_HEALTH)
 
 	routes := generateRoutes()
 	router := newRouter(routes)
 
-	port := fmt.Sprintf(":%d",server_url.url_port)
+	port := fmt.Sprintf(":%d", server_url.url_port)
 	srv := &http.Server{Addr: port, Handler: router}
 
 	//Set up signal handling for graceful kill
