@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.18.0] - 2022-07-19
+
+### Changed
+
+- Updated CT tests to hms-test:3.2.0 image to pick up Helm test enhancements and CVE fixes.
+
 ## [1.17.0] - 2022-06-29
 
 ### Changed
