@@ -3,3 +3,11 @@ kubernetes/.packaged
 kubernetes/cray-hms-hmnfd/charts
 .idea
 test/integration/configs
+
+# Prevent certificates from getting checked in
+*.ca
+*.cer
+*.crt
+*.csr
+*.key
+*.pem
