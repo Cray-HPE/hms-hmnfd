@@ -101,7 +101,6 @@ to send lots of identical SCNs for many components in large bursts.
 Batching reduces the SCNs sent to one (or very few) per burst rather
 than one per individual SCN.
 
-
 ### SCN Distribution To The SMA Framework
 
 When SCNs are received  by HMNFD, they are placed on the SMA Kafka bus
@@ -143,7 +142,6 @@ Usage: hmnfd [options]
   --use_telemetry         Inject notifications onto telemetry bus (Default: no)
 
 ```
-
 
 ## Building And Executing hmnfd
 
@@ -190,9 +188,11 @@ docker run -p 28500:28500 --name hmnfd cray-hmnfd:1.13.0
 
 ### hmnfd CT Testing
 
-This repository builds and publishes hms-hmnfd-ct-test RPMs along with the service itself containing tests that verify hmnfd on the
-NCNs of live Shasta systems. The tests require the hms-ct-test-base RPM to also be installed on the NCNs in order to execute.
-The version of the test RPM installed on the NCNs should always match the version of hmnfd deployed on the system.
+In addition to the service itself, this repository builds and publishes cray-hmnfd-test images
+containing tests that verify HMNFD on live Shasta systems. The tests are invoked via helm test
+as part of the Continuous Test (CT) framework during CSM installs and upgrades. The version of
+the cray-hmnfd-test image (vX.Y.Z) should match the version of the cray-hmnfd image being
+tested, both of which are specified in the helm chart for the service.
 
 ## Potential Future Features And Updates
 
