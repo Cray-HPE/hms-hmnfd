@@ -39,6 +39,7 @@ services:
   #    - hmnfd
   cray-hmnfd:
     hostname: cray-hmnfd
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile

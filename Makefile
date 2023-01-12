@@ -28,7 +28,7 @@ DOCKER_IMAGE ?= ${NAME}:${VERSION}
 all: image unittest integration snyk ct ct_image
 
 image:
-	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
+	docker buildx build --platform linux/amd64 ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
 
 unittest:
 	./runUnitTest.sh
