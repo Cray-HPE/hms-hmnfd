@@ -38,14 +38,14 @@ FROM build-base AS base
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmi-nfd/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-hmnfd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmnfd/vendor
 
 
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmi-nfd/cmd/hmi-nfd
+RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmnfd/cmd/hmi-nfd
 
 
 ### Final Stage ###

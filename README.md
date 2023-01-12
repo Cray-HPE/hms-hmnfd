@@ -162,7 +162,7 @@ This will build a Docker container image tagged with the current version
 #### Building An HMNFD binary
 
 ```
-$ cd cmd/hms-hmi-nfd
+$ cd cmd/hms-hmnfd
 $ go build -mod=vendor -o hmnfd
 ```
 

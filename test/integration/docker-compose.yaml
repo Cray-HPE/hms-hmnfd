@@ -55,6 +55,7 @@ services:
     build:
       context: ../../
       dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
       - DEBUG=3
       - SM_URL=http://cray-smd:27779/hsm/v2

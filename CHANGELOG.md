@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.18.1] - 2023-01-12
+
+### Changed
+
+- Renamed the repo to hms-hmnfd, made some build changes to support M1 Mac (ARM).
+
 ## [1.18.0] - 2022-07-19
 
 ### Changed
@@ -194,7 +200,7 @@ These are changes to charts in support of:
 
 ## [1.4.2] - 2020-08-12
 
-- CASMHMS-2957 - Updated hms-hmi-nfd to use the latest trusted baseOS images.
+- CASMHMS-2957 - Updated hms-hmnfd to use the latest trusted baseOS images.
 
 ## [1.4.1] - 2020-06-30
 

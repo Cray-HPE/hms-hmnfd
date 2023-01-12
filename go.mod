@@ -1,4 +1,4 @@
-module github.com/Cray-HPE/hms-hmi-nfd
+module github.com/Cray-HPE/hms-hmnfd
 
 go 1.16
 

@@ -8,5 +8,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.testing.unit.Dockerfile
+    platform: linux/amd64
     networks:
       - hmnfd
