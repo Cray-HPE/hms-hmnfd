@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2023] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,18 +20,38 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+# Tavern test cases for the HMNFD service APIs
+# Author: Mitch Schooler
+# Service: Hardware Management Node Fanout Daemon
 
-# Example test metrics test cases: 1
-# 1. GET /get API response code
+# HMS test metrics test cases: 3
+# POST /health fails
+# POST /liveness fails
+# POST /readiness fails
 ---
-test_name: Verify the service status resource example test
+test_name: Verify the HMNFD service APIs handle unsupported operations
 
 stages:
-  # 1. GET /get API response code
-  - name: Ensure that the  service status can be retrieved
+  - name: Verify that /health rejects POST requests
     request:
-      url: "{base_url}/get"
-      method: GET
+      url: "{hmnfd_base_url}/hmi/v2/health"
+      method: POST
       verify: !bool "{verify}"
     response:
-      status_code: 200
+      status_code: 405
+
+  - name: Verify that /liveness rejects POST requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/liveness"
+      method: POST
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  - name: Verify that /readiness rejects POST requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/readiness"
+      method: POST
+      verify: !bool "{verify}"
+    response:
+      status_code: 405

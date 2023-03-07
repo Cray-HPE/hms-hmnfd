@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022-2023] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -31,7 +31,6 @@ export COMPOSE_FILE=docker-compose.test.ct.yaml
 echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
 echo "COMPOSE_FILE: $COMPOSE_FILE"
 
-
 function cleanup() {
   docker-compose down
   if [[ $? -ne 0 ]]; then
@@ -41,14 +40,14 @@ function cleanup() {
   exit $1
 }
 
-
 # Get the base containers running
 echo "Starting containers..."
 docker-compose build --no-cache
+docker-compose up --exit-code-from wait-for-smd wait-for-smd
 docker-compose up -d cray-hmnfd
 
 # Run the CT smoke tests
-docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
+docker-compose up --exit-code-from smoke-tests smoke-tests
 test_result=$?
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
@@ -56,19 +55,13 @@ if [[ $test_result -ne 0 ]]; then
   cleanup 1
 fi
 
-# No CT functional tests yet
-#docker-compose up -d ct-tests-functional-wait-for-smd
-#docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
-#docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
-
-#docker-compose up --exit-code-from ct-tests-functional ct-tests-functional
-#test_result=$?
-# Clean up
-#echo "Cleaning up containers..."
-#if [[ $test_result -ne 0 ]]; then
-#  echo "CT functional tests FAILED!"
-#  cleanup 1
-#fi
+# Run the CT Tavern tests
+docker-compose up --exit-code-from tavern-tests tavern-tests
+test_result=$?
+if [[ $test_result -ne 0 ]]; then
+  echo "CT tavern tests FAILED!"
+  cleanup 1
+fi
 
 # Cleanup
 echo "CT tests PASSED!"
