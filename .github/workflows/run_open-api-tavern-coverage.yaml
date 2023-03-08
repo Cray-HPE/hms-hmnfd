@@ -9,6 +9,6 @@ jobs:
     #the v1 tag exists now
     with:
       open-api-file: "api/swagger_v2.yaml"
-      tavern-file-dir: "test/ct/functional"
+      tavern-file-dir: "test/ct/api"
       api-target-urls: "{hmnfd_base_url}"
     secrets: inherit
