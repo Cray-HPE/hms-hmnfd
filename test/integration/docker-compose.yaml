@@ -17,7 +17,7 @@ services:
       - cray-smd
       - fakesub_a
       - fakesub_b
-    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_integration_test.yaml -p /src/app
+    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_integration_test.yaml -p /src/app/api
     networks:
       - hmnfd
   fakesub_a:
