@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - cray-hmnfd
-    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/hmi
+    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/
     networks:
       - hmnfd
   tavern-tests:
