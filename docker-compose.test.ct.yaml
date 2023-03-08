@@ -58,8 +58,6 @@ services:
       - etcd
       - cray-smd
       - cray-hms-hmcollector
-      #TODO
-      #- redfish-simulator
       - vault-kv-enabler
     networks:
       - hmnfd
