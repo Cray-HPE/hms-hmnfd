@@ -8,36 +8,10 @@ networks:
   hmnfd:
 
 services:
-  wait-for-smd:
-    build:
-      context: test/ct/
-      dockerfile: Dockerfile.wait-for-smd.Dockerfile
-    depends_on:
-      - cray-smd
-      - cray-hms-hmcollector
-      - cray-hmnfd
-      - vault-kv-enabler
-      - emulator-loader
-    networks:
-      - hmnfd
-  smoke-tests:
-    build:
-      context: test/ct/
-      dockerfile: Dockerfile
-    depends_on:
-      - cray-hmnfd
-    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/
-    networks:
-      - hmnfd
-  tavern-tests:
-    build:
-      context: test/ct/
-      dockerfile: Dockerfile
-    depends_on:
-      - cray-hmnfd
-    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_ct_test.yaml -p /src/app/api
-    networks:
-      - hmnfd
+
+  #
+  # Service under test
+  #
   cray-hmnfd:
     hostname: cray-hmnfd
     platform: linux/amd64
@@ -61,6 +35,10 @@ services:
       - vault-kv-enabler
     networks:
       - hmnfd
+
+  #
+  # Required services
+  #
   etcd:
     image: artifactory.algol60.net/quay.io/coreos/etcd:v3.4.7
     environment:
@@ -69,6 +47,7 @@ services:
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
     networks:
       - hmnfd
+
   vault:
     hostname: vault
     image: artifactory.algol60.net/docker.io/library/vault:1.5.5
@@ -80,6 +59,7 @@ services:
       - IPC_LOCK
     networks:
       - hmnfd
+
   vault-kv-enabler:
     image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
     environment:
@@ -90,11 +70,13 @@ services:
       - vault
     networks:
       - hmnfd
+
   redis:
     image: artifactory.algol60.net/docker.io/library/redis:5.0-alpine3.12
     hostname: hms-redfish-redis
     networks:
       - hmnfd
+
   hmsds-postgres:
     hostname: hmsds-postgres
     image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
@@ -104,6 +86,7 @@ services:
       - POSTGRES_DB=hmsds
     networks:
       - hmnfd
+
   cray-smd-init:
     image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
     environment:
@@ -114,6 +97,7 @@ services:
     networks:
       - hmnfd
     command: /entrypoint.sh smd-init
+
   cray-smd:
     image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
     environment:
@@ -134,6 +118,7 @@ services:
       - vault
     networks:
       - hmnfd
+
   zookeeper:
     image: artifactory.algol60.net/docker.io/confluentinc/cp-zookeeper:6.1.1
     hostname: zookeeper
@@ -142,6 +127,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - hmnfd
+
   kafka:
     image: artifactory.algol60.net/docker.io/confluentinc/cp-kafka:6.1.1
     hostname: kafka
@@ -156,6 +142,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     networks:
       - hmnfd
+
   cray-hms-hmcollector:
     image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.12.4
     environment:
@@ -177,6 +164,46 @@ services:
       - hmnfd
     depends_on:
       - kafka
+
+  #
+  # Tests
+  #
+  wait-for-smd:
+    build:
+      context: test/ct/
+      dockerfile: Dockerfile.wait-for-smd.Dockerfile
+    depends_on:
+      - cray-smd
+      - cray-hms-hmcollector
+      - cray-hmnfd
+      - vault-kv-enabler
+      - emulator-loader
+    networks:
+      - hmnfd
+
+  smoke-tests:
+    build:
+      context: test/ct/
+      dockerfile: Dockerfile
+    depends_on:
+      - cray-hmnfd
+    entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-hmnfd:28600/
+    networks:
+      - hmnfd
+
+  tavern-tests:
+    build:
+      context: test/ct/
+      dockerfile: Dockerfile
+    depends_on:
+      - cray-hmnfd
+    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_ct_test.yaml -p /src/app/api
+    networks:
+      - hmnfd
+
+  #
+  # Emulated hardware
+  #
   emulator-loader:
     image: artifactory.algol60.net/docker.io/library/golang:1.16-alpine
     command: >
