@@ -24,26 +24,26 @@
 # Author: Mitch Schooler
 # Service: Hardware Management Node Fanout Daemon
 
-# HMS test metrics test cases: TODO
+# HMS test metrics test cases: 18
+
 # POST /params fails
 # PUT /params fails
 # DELETE /params fails
-
 # PATCH /params invalid debug fails
 # PATCH /params invalid kv_url fails
-#TODO: continue these
 # PATCH /params invalid nosm fails
-# PATCH /params invalid port fails
-# PATCH /params invalid scn_in_url fails
+# PATCH /params port fails
+# PATCH /params scn_in_url fails
 # PATCH /params invalid scn_max_cache fails
 # PATCH /params invalid scn_cache_delay fails
 # PATCH /params invalid scn_retries fails
 # PATCH /params invalid scn_backoff fails
 # PATCH /params invalid sm_retries fails
 # PATCH /params invalid sm_timeout fails
-# PATCH /params invalid sm_url_orig fails
+# PATCH /params invalid sm_url fails
 # PATCH /params invalid telemetry_host fails
 # PATCH /params invalid use_telemetry fails
+# PATCH /params empty payload
 ---
 test_name: Verify /params rejects unsupported methods
 
@@ -124,7 +124,6 @@ stages:
   - name: Attempt a /params PATCH operation with an invalid KV_url setting
     request:
       url: "{hmnfd_base_url}/hmi/v2/params"
-      #json: {"Debug":1,"KV_url":"http://cray-hmnfd-ct-test:9999","Nosm":1,"Scn_max_cache":999,"Scn_cache_delay":9,"Scn_retries":9,"Scn_backoff":9,"SM_retries":9,"SM_timeout":99,"SM_url":"http://cray-smd-ct-test:99999/hsm/v2","Telemetry_host":"kafka:9999:cray-hmsstatechange-notifications-ct-test","Use_telemetry":1}
       json: {"KV_url":999999}
       method: PATCH
       verify: !bool "{verify}"
@@ -161,3 +160,537 @@ stages:
                 required: True
                 enum:
                   - 400
+
+  # PATCH /params invalid nosm fails
+  - name: Attempt a /params PATCH operation with an invalid Nosm setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Nosm":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in Nosm field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params port fails
+  - name: Attempt a /params PATCH operation to change the Port setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Port":99999}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Parameter 'port' can't be changed in PATCH operation; "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params scn_in_url fails
+  - name: Attempt a /params PATCH operation to change the Scn_in_url setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Scn_in_url":"http://cray-hmnfd-fake/hmi/v1/scn"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Parameter 'scn_in_url' can't be changed in PATCH operation; "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid scn_max_cache fails
+  - name: Attempt a /params PATCH operation with an invalid Scn_max_cache setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Scn_max_cache":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in Scn_max_cache field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid scn_cache_delay fails
+  - name: Attempt a /params PATCH operation with an invalid Scn_cache_delay setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Scn_cache_delay":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in Scn_cache_delay field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid scn_retries fails
+  - name: Attempt a /params PATCH operation with an invalid Scn_retries setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Scn_retries":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid scn_backoff fails
+  - name: Attempt a /params PATCH operation with an invalid Scn_backoff setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Scn_backoff":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid sm_retries fails
+  - name: Attempt a /params PATCH operation with an invalid SM_retries setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"SM_retries":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid sm_timeout fails
+  - name: Attempt a /params PATCH operation with an invalid SM_timeout setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"SM_timeout":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid sm_url fails
+  - name: Attempt a /params PATCH operation with an invalid SM_url setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"SM_url":999999}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in SM_url field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid telemetry_host fails
+  - name: Attempt a /params PATCH operation with an invalid Telemetry_host setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Telemetry_host":999999}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in Telemetry_host field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+  # PATCH /params invalid use_telemetry fails
+  - name: Attempt a /params PATCH operation with an invalid Use_telemetry setting
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Use_telemetry":"fake"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 400
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              type:
+                type: str
+                required: True
+                enum:
+                  - "about:blank"
+              title:
+                type: str
+                required: True
+                enum:
+                  - "Invalid Request"
+              detail:
+                type: str
+                required: True
+                enum:
+                  - "Invalid data type in Use_telemetry field. "
+              instance:
+                type: str
+                required: True
+                enum:
+                  - "/params"
+              status:
+                type: int
+                required: True
+                enum:
+                  - 400
+
+---
+test_name: Verify /params handles PATCH requests with an empty payload
+
+stages:
+  # PATCH /params empty payload
+  - name: Attempt a /params PATCH operation with an empty payload
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+              KV_url:
+                type: str
+                required: True
+              Nosm:
+                type: int
+                required: True
+              Port:
+                type: int
+                required: True
+              Scn_in_url:
+                type: str
+                required: True
+              Scn_max_cache:
+                type: int
+                required: True
+              Scn_cache_delay:
+                type: int
+                required: True
+              Scn_retries:
+                type: int
+                required: True
+              Scn_backoff:
+                type: int
+                required: True
+              SM_retries:
+                type: int
+                required: True
+              SM_timeout:
+                type: int
+                required: True
+              SM_url:
+                type: str
+                required: True
+              Telemetry_host:
+                type: str
+                required: True
+              Use_telemetry:
+                type: int
+                required: True
