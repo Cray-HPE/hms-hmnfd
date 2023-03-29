@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Tavern test cases for the HMNFD params APIs
+# Tavern test cases for the HMNFD params API
 # Author: Mitch Schooler
 # Service: Hardware Management Node Fanout Daemon
 
