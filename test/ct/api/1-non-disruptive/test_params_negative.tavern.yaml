@@ -25,7 +25,6 @@
 # Service: Hardware Management Node Fanout Daemon
 
 # HMS test metrics test cases: 18
-
 # POST /params fails
 # PUT /params fails
 # DELETE /params fails

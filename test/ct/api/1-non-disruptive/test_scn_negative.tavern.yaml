@@ -24,42 +24,47 @@
 # Author: Mitch Schooler
 # Service: Hardware Management Node Fanout Daemon
 
-# HMS test metrics test cases: 2
-# POST /scn state
-# POST /scn role
+# HMS test metrics test cases: 4
+# GET /scn fails
+# PUT /scn fails
+# PATCH /scn fails
+# DELETE /scn fails
 ---
-test_name: Verify the HMNFD scn API
+test_name: Verify /scn rejects unsupported methods
 
 stages:
-  - name: Retrieve a node from HSM to be used in later stages
+  # GET /scn fails
+  - name: Ensure that /scn rejects unsupported GET operations
     request:
-      url: "{hsm_base_url}/hsm/v2/State/Components?type=Node&enabled=True"
+      url: "{hmnfd_base_url}/hmi/v2/scn"
       method: GET
       verify: !bool "{verify}"
     response:
-      status_code: 200
-      save:
-        json:
-          node_xname: Components[0].ID
-          node_state: Components[0].State
-          node_role: Components[0].Role
+      status_code: 405
 
-  # POST /scn state
-  - name: Verify that we can send state change notifications with state to HMNFD for fanout
+  # PUT /scn fails
+  - name: Ensure that /scn rejects unsupported PUT operations
     request:
       url: "{hmnfd_base_url}/hmi/v2/scn"
-      json: {"Components":["{node_xname}"],"Enabled":true,"State":"{node_state}"}
-      method: POST
+      method: PUT
       verify: !bool "{verify}"
     response:
-      status_code: 200
+      status_code: 405
 
-  # POST /scn role
-  - name: Verify that we can send state change notifications with role to HMNFD for fanout
+  # PATCH /scn fails
+  - name: Ensure that /scn rejects unsupported PATCH operations
     request:
       url: "{hmnfd_base_url}/hmi/v2/scn"
-      json: {"Components":["{node_xname}"],"Enabled":true,"Role":"{node_role}"}
-      method: POST
+      method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 200
+      status_code: 405
+
+  # DELETE /scn fails
+  - name: Ensure that /scn rejects unsupported DELETE operations
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/scn"
+      method: DELETE
+      verify: !bool "{verify}"
+    response:
+      status_code: 405

@@ -24,14 +24,24 @@
 # Author: Mitch Schooler
 # Service: Hardware Management Node Fanout Daemon
 
-# HMS test metrics test cases: 3
+# HMS test metrics test cases: 12
 # POST /health fails
 # POST /liveness fails
 # POST /readiness fails
+# PUT /health fails
+# PUT /liveness fails
+# PUT /readiness fails
+# PATCH /health fails
+# PATCH /liveness fails
+# PATCH /readiness fails
+# DELETE /health fails
+# DELETE /liveness fails
+# DELETE /readiness fails
 ---
 test_name: Verify the HMNFD service APIs handle unsupported operations
 
 stages:
+  # POST /health fails
   - name: Verify that /health rejects POST requests
     request:
       url: "{hmnfd_base_url}/hmi/v2/health"
@@ -40,6 +50,7 @@ stages:
     response:
       status_code: 405
 
+  # POST /liveness fails
   - name: Verify that /liveness rejects POST requests
     request:
       url: "{hmnfd_base_url}/hmi/v2/liveness"
@@ -48,10 +59,92 @@ stages:
     response:
       status_code: 405
 
+  # POST /readiness fails
   - name: Verify that /readiness rejects POST requests
     request:
       url: "{hmnfd_base_url}/hmi/v2/readiness"
       method: POST
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PUT /health fails
+  - name: Verify that /health rejects PUT requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/health"
+      method: PUT
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PUT /liveness fails
+  - name: Verify that /liveness rejects PUT requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/liveness"
+      method: PUT
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PUT /readiness fails
+  - name: Verify that /readiness rejects PUT requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/readiness"
+      method: PUT
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PATCH /health fails
+  - name: Verify that /health rejects PATCH requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/health"
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PATCH /liveness fails
+  - name: Verify that /liveness rejects PATCH requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/liveness"
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # PATCH /readiness fails
+  - name: Verify that /readiness rejects PATCH requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/readiness"
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # DELETE /health fails
+  - name: Verify that /health rejects DELETE requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/health"
+      method: DELETE
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # DELETE /liveness fails
+  - name: Verify that /liveness rejects DELETE requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/liveness"
+      method: DELETE
+      verify: !bool "{verify}"
+    response:
+      status_code: 405
+
+  # DELETE /readiness fails
+  - name: Verify that /readiness rejects DELETE requests
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/readiness"
+      method: DELETE
       verify: !bool "{verify}"
     response:
       status_code: 405
