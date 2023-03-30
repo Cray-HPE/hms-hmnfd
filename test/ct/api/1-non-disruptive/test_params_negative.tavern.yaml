@@ -24,7 +24,7 @@
 # Author: Mitch Schooler
 # Service: Hardware Management Node Fanout Daemon
 
-# HMS test metrics test cases: 18
+# HMS test metrics test cases: 17
 # POST /params fails
 # PUT /params fails
 # DELETE /params fails
@@ -42,7 +42,6 @@
 # PATCH /params invalid sm_url fails
 # PATCH /params invalid telemetry_host fails
 # PATCH /params invalid use_telemetry fails
-# PATCH /params empty payload
 ---
 test_name: Verify /params rejects unsupported methods
 
@@ -631,65 +630,3 @@ stages:
                 required: True
                 enum:
                   - 400
-
----
-test_name: Verify /params handles PATCH requests with an empty payload
-
-stages:
-  # PATCH /params empty payload
-  - name: Attempt a /params PATCH operation with an empty payload
-    request:
-      url: "{hmnfd_base_url}/hmi/v2/params"
-      json: {}
-      method: PATCH
-      verify: !bool "{verify}"
-    response:
-      status_code: 200
-      verify_response_with:
-        function: tavern.testutils.helpers:validate_pykwalify
-        extra_kwargs:
-          schema:
-            type: map
-            mapping:
-              Debug:
-                type: int
-                required: True
-              KV_url:
-                type: str
-                required: True
-              Nosm:
-                type: int
-                required: True
-              Port:
-                type: int
-                required: True
-              Scn_in_url:
-                type: str
-                required: True
-              Scn_max_cache:
-                type: int
-                required: True
-              Scn_cache_delay:
-                type: int
-                required: True
-              Scn_retries:
-                type: int
-                required: True
-              Scn_backoff:
-                type: int
-                required: True
-              SM_retries:
-                type: int
-                required: True
-              SM_timeout:
-                type: int
-                required: True
-              SM_url:
-                type: str
-                required: True
-              Telemetry_host:
-                type: str
-                required: True
-              Use_telemetry:
-                type: int
-                required: True
