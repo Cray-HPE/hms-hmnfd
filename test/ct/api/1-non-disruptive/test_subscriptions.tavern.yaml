@@ -27,7 +27,7 @@
 # HMS test metrics test cases: 1
 # GET /subscriptions all
 ---
-test_name: Verify the HMNFD subscriptions API
+test_name: Verify the HMNFD /subscriptions API
 
 stages:
   # GET /subscriptions all

@@ -32,7 +32,7 @@
 # PATCH /params restore
 # GET /params restore
 ---
-test_name: Verify the HMNFD params APIs
+test_name: Verify the HMNFD /params API
 
 stages:
   # GET /params

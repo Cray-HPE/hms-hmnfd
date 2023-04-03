@@ -27,7 +27,7 @@
 # HMS test metrics test cases: 1
 # DELETE /subscriptions/{xname}/agents
 ---
-test_name: Verify the HMNFD subscriptions API
+test_name: Verify the HMNFD /subscriptions API
 
 stages:
   - name: Retrieve a node from HSM to be used in later stages

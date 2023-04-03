@@ -33,7 +33,7 @@
 # GET /subscriptions/{xname} deleted
 # DELETE /subscriptions/{xname}/agents/{agent} deleted subscription
 ---
-test_name: Verify the HMNFD subscriptions API
+test_name: Verify the HMNFD /subscriptions API
 
 stages:
   - name: Retrieve a node from HSM to be used in later stages

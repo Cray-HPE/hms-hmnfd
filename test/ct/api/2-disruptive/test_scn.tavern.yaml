@@ -28,7 +28,7 @@
 # POST /scn state
 # POST /scn role
 ---
-test_name: Verify the HMNFD scn API
+test_name: Verify the HMNFD /scn API
 
 stages:
   - name: Retrieve a node from HSM to be used in later stages
