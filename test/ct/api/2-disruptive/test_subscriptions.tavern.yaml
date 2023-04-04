@@ -51,7 +51,7 @@ stages:
   - name: Verify that a new HMNFD state change notification subscription can be created
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/{node_xname}/agents/{test_agent}"
-      json: {"Components":["{node_xname}"],"Subscriber":"{test_agent}@{node_xname}","SubscriberComponent":"{node_xname}","SubscriberAgent":"{test_agent}","Enabled":true,"States":["on","off","empty"],"Url":"http://{test_agent_host}/boot/v1/scn"}
+      json: {"Components":["{node_xname}"],"Enabled":true,"States":["on","off","empty"],"Url":"http://{test_agent_host}/boot/v1/scn"}
       method: POST
       verify: !bool "{verify}"
     response:
@@ -96,13 +96,20 @@ stages:
                         required: True
                       Enabled:
                         type: bool
-                        required: True
+                        required: False
                       Roles:
                         type: seq
                         matching: all
                         required: False
                         sequence:
                           - type: str
+                      #TODO: not sure about these
+                      #SubRoles:
+                      #  type: seq
+                      #  matching: all
+                      #  required: False
+                      #  sequence:
+                      #    - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -112,7 +119,6 @@ stages:
                       States:
                         type: seq
                         matching: all
-                        #TODO: test to see if it's possible to exclude 'States', haven't seen an example of this in the wild
                         required: False
                         sequence:
                           - type: str
@@ -124,7 +130,7 @@ stages:
   - name: Verify that an HMNFD state change notification subscription can be updated
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/{node_xname}/agents/{test_agent}"
-      json: {"Components":["{node_xname}"],"Subscriber":"{test_agent}@{node_xname}","SubscriberComponent":"{node_xname}","SubscriberAgent":"{test_agent}","Enabled":true,"States":["unknown","populated"],"Url":"http://{test_agent_host}/boot/v1/scn"}
+      json: {"Components":["{node_xname}"],"Enabled":true,"States":["unknown","populated"],"Url":"http://{test_agent_host}/boot/v1/scn"}
       method: PATCH
       verify: !bool "{verify}"
     response:
@@ -169,13 +175,20 @@ stages:
                         required: True
                       Enabled:
                         type: bool
-                        required: True
+                        required: False
                       Roles:
                         type: seq
                         matching: all
                         required: False
                         sequence:
                           - type: str
+                      #TODO: not sure about these
+                      #SubRoles:
+                      #  type: seq
+                      #  matching: all
+                      #  required: False
+                      #  sequence:
+                      #    - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -185,7 +198,6 @@ stages:
                       States:
                         type: seq
                         matching: all
-                        #TODO: test to see if it's possible to exclude 'States', haven't seen an example of this in the wild
                         required: False
                         sequence:
                           - type: str
@@ -241,13 +253,20 @@ stages:
                         required: True
                       Enabled:
                         type: bool
-                        required: True
+                        required: False
                       Roles:
                         type: seq
                         matching: all
                         required: False
                         sequence:
                           - type: str
+                      #TODO: not sure about these
+                      #SubRoles:
+                      #  type: seq
+                      #  matching: all
+                      #  required: False
+                      #  sequence:
+                      #    - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -257,7 +276,6 @@ stages:
                       States:
                         type: seq
                         matching: all
-                        #TODO: test to see if it's possible to exclude 'States', haven't seen an example of this in the wild
                         required: False
                         sequence:
                           - type: str

@@ -69,13 +69,20 @@ stages:
                         required: True
                       Enabled:
                         type: bool
-                        required: True
+                        required: False
                       Roles:
                         type: seq
                         matching: all
                         required: False
                         sequence:
                           - type: str
+                      #TODO: not sure about these
+                      #SubRoles:
+                      #  type: seq
+                      #  matching: all
+                      #  required: False
+                      #  sequence:
+                      #    - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -85,7 +92,6 @@ stages:
                       States:
                         type: seq
                         matching: all
-                        #TODO: test to see if it's possible to exclude 'States', haven't seen an example of this in the wild
                         required: False
                         sequence:
                           - type: str

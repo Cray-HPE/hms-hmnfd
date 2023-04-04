@@ -144,11 +144,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '405':
@@ -195,6 +197,15 @@ paths:
               schema:
                 #$ref: '#/components/schemas/SubscribePost' ###ZZZZ change this?
                 $ref: '#/components/schemas/SubscriptionListArray' ###ZZZZ change this?
+        '400':
+          description: Bad Request.  Invalid XName in URL path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
             Unauthorized.  RBAC prevented operation from executing, or
@@ -203,11 +214,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '405':
@@ -249,9 +262,18 @@ paths:
       responses:
         '204':
           description: Success.
+        '400':
+          description: Bad Request.  Invalid XName in URL path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -260,7 +282,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
@@ -305,7 +326,7 @@ paths:
       - in: path
         name: xname
         required: true
-        description: The XName of the subscribing component (typically a node)
+        description: The xname of the subscribing component (typically a node)
         schema:
           #$ref: '#/components/schemas/XName.1.0.0'
           type: string
@@ -324,7 +345,7 @@ paths:
       description: >-
         Subscribe to state change notifications for a set of components. Once this is
         done, the subscribing components will receive these notifications as they
-        occur, using the URL specified at subscription time.  The XName of the
+        occur, using the URL specified at subscription time.  The xname of the
         subscribing component as well as the software agent doing the subscribing
         are specified in the URL path.
       operationId: doSubscriptionPOSTV2
@@ -346,7 +367,7 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -355,7 +376,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
@@ -402,7 +422,7 @@ paths:
       summary: Modify a subscription to state change notifications
       description: >-
         Modify an existing subscription to state change notifications for a 
-        component and software agent.  The XName of the subscribing component 
+        component and software agent.  The xname of the subscribing component 
         as well as the software agent doing the subscribing are specified in 
         the URL path.
       operationId: doSubscriptionPATCHV2
@@ -424,7 +444,7 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -433,7 +453,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
@@ -480,7 +499,7 @@ paths:
       summary: Delete a specific state change notification subscription
       description: >-
         Delete a specific state change notification subscription associated 
-        with a target component and a target software agent.  The XName of the
+        with a target component and a target software agent.  The xname of the
         subscribing component as well as the software agent on the subscribing 
         component are specified in the URL path.
       operationId: doSubscriptionDeleteXNameAgentV2
@@ -488,7 +507,9 @@ paths:
         '204':
           description: Success.
         '400':
-          description: Does Not Exist.  Endpoint not available.
+          description: >-
+            Bad Request.  Invalid XName in URL path or No matching
+            subscription for DELETE.
           content:
             application/json:
               schema:
@@ -498,8 +519,17 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
               schema:
@@ -559,11 +589,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '405':
@@ -596,7 +628,7 @@ paths:
       operationId: doParamsPatch
       responses:
         '200':
-          description: Success
+          description: Success.
         '400':
           description: >-
             Bad Request.  Malformed JSON.  Verify all JSON formatting in
@@ -619,7 +651,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
@@ -805,7 +836,7 @@ paths:
       operationId: doSCN
       responses:
         '200':
-          description: Success
+          description: Success.
         '400':
           description: >-
             Bad Request.  Malformed JSON.  Verify all JSON formatting in
@@ -828,7 +859,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
-        #TODO: verify this
         '404':
           description: Does Not Exist.  Endpoint not available.
           content:
