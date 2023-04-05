@@ -51,7 +51,7 @@ stages:
   - name: Verify that a new HMNFD state change notification subscription can be created
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/{node_xname}/agents/{test_agent}"
-      json: {"Components":["{node_xname}"],"Enabled":true,"States":["on","off","empty"],"Url":"http://{test_agent_host}/boot/v1/scn"}
+      json: {"Components":["{node_xname}"],"Enabled":true,"Roles":["Compute","Service","System","Management"],"SubRoles":["Master","Worker","Storage"],"SoftwareStatus":["AdminDown","Unknown","Other"],"States":["Ready","On","Off","Standby","Populated","Empty"],"Url":"http://{test_agent_host}/boot/v1/scn"}
       method: POST
       verify: !bool "{verify}"
     response:
@@ -103,13 +103,12 @@ stages:
                         required: False
                         sequence:
                           - type: str
-                      #TODO: not sure about these
-                      #SubRoles:
-                      #  type: seq
-                      #  matching: all
-                      #  required: False
-                      #  sequence:
-                      #    - type: str
+                      SubRoles:
+                        type: seq
+                        matching: all
+                        required: False
+                        sequence:
+                          - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -130,7 +129,7 @@ stages:
   - name: Verify that an HMNFD state change notification subscription can be updated
     request:
       url: "{hmnfd_base_url}/hmi/v2/subscriptions/{node_xname}/agents/{test_agent}"
-      json: {"Components":["{node_xname}"],"Enabled":true,"States":["unknown","populated"],"Url":"http://{test_agent_host}/boot/v1/scn"}
+      json: {"Components":["{node_xname}"],"Roles":["System","Management"],"SubRoles":["Storage"],"SoftwareStatus":["Unknown","Other"],"States":["Populated","Empty"],"Url":"http://{test_agent_host}/boot/v1/scn"}
       method: PATCH
       verify: !bool "{verify}"
     response:
@@ -182,13 +181,12 @@ stages:
                         required: False
                         sequence:
                           - type: str
-                      #TODO: not sure about these
-                      #SubRoles:
-                      #  type: seq
-                      #  matching: all
-                      #  required: False
-                      #  sequence:
-                      #    - type: str
+                      SubRoles:
+                        type: seq
+                        matching: all
+                        required: False
+                        sequence:
+                          - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all
@@ -260,13 +258,12 @@ stages:
                         required: False
                         sequence:
                           - type: str
-                      #TODO: not sure about these
-                      #SubRoles:
-                      #  type: seq
-                      #  matching: all
-                      #  required: False
-                      #  sequence:
-                      #    - type: str
+                      SubRoles:
+                        type: seq
+                        matching: all
+                        required: False
+                        sequence:
+                          - type: str
                       SoftwareStatus:
                         type: seq
                         matching: all

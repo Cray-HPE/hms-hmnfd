@@ -21,11 +21,11 @@ info:
     The REST API provides the following functions:
 
     * Subscription for component state changes:
-        * Hardware state (On, Off, Ready, Standby, Halt etc.)
-        * Logical state (arbitrary like AdminDown, Other)
-        * Role (Compute, Management, Application etc.)
+        * Hardware state (On, Off, Ready, Standby, Halt, etc.)
+        * Logical state (arbitrary like AdminDown, Other, etc.)
+        * Role (Compute, Management, Application, etc.)
+        * SubRole (Master, Worker, Storage, etc.)
         * Enabled state
-        * Flag (OK, Alert, Warning, etc.)
 
     * View current subscriptions
 
