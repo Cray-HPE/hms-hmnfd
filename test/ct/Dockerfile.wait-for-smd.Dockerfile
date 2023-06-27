@@ -36,5 +36,4 @@ WORKDIR /src/app
 RUN chown -R 65534:65534 /src
 USER 65534:65534
 
-# this is inherited from the hms-test container
 CMD [ "/src/app/wait-for.sh" ]
