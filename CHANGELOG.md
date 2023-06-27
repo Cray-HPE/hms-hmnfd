@@ -14,7 +14,7 @@ These are changes to charts in support of:
 ### Changed
 
 - Refactored docker-compose file for runCT environment and replaced RTS with RIE.
-- Updated CT tests to hms-test:5.0.0 image.
+- Updated CT tests to hms-test:5.1.0 image.
 - Added non-disruptive, disruptive, and destructive Tavern CT tests for HMNFD.
 - Made minor corrections and cleaned up the API swagger_v2 specification.
 
