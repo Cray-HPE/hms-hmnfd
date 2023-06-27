@@ -25,6 +25,7 @@ FROM artifactory.algol60.net/csm-docker/stable/hms-test:5.1.0
 COPY smoke/ /src/app
 COPY api/ /src/app/api
 COPY tavern_global_config_ct_test_environment.yaml /src/app/tavern_global_config_ct_test_environment.yaml
+COPY tavern_global_config_ct_production.yaml /src/app/tavern_global_config_ct_production.yaml
 
 ENV PATH="/src/libs:${PATH}"
 ENV PATH="/src/app:${PATH}"
