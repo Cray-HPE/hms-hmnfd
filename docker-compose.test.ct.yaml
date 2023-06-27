@@ -197,7 +197,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - cray-hmnfd
-    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_ct_test.yaml -p /src/app/api
+    entrypoint: entrypoint.sh tavern -c /src/app/tavern_global_config_ct_test_environment.yaml -p /src/app/api
     networks:
       - hmnfd
 
