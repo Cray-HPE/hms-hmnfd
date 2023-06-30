@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022-2023] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,12 +20,12 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-FROM artifactory.algol60.net/csm-docker/stable/hms-test:3.2.0
+FROM artifactory.algol60.net/csm-docker/stable/hms-test:5.1.0
 
 COPY smoke/ /src/app
-# No CT functional tests yet
-#COPY functional/ /src/app
-COPY tavern_global_config_ct_test.yaml /src/app/tavern_global_config_ct_test.yaml
+COPY api/ /src/app/api
+COPY tavern_global_config_ct_test_environment.yaml /src/app/tavern_global_config_ct_test_environment.yaml
+COPY tavern_global_config_ct_production.yaml /src/app/tavern_global_config_ct_production.yaml
 
 ENV PATH="/src/libs:${PATH}"
 ENV PATH="/src/app:${PATH}"

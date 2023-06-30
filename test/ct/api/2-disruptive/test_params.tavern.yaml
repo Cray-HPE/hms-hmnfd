@@ -1,0 +1,537 @@
+# MIT License
+#
+# (C) Copyright [2023] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
+# Tavern test cases for the HMNFD params API
+# Author: Mitch Schooler
+# Service: Hardware Management Node Fanout Daemon
+
+# HMS test metrics test cases: 6
+# GET /params
+# PATCH /params empty payload
+# PATCH /params new
+# GET /params new
+# PATCH /params restore
+# GET /params restore
+---
+test_name: Verify the HMNFD /params API
+
+stages:
+  # GET /params
+  - name: Verify that the HMNFD service parameters can be retrieved
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      method: GET
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+              KV_url:
+                type: str
+                required: True
+              Nosm:
+                type: int
+                required: True
+              Port:
+                type: int
+                required: True
+              Scn_in_url:
+                type: str
+                required: True
+              Scn_max_cache:
+                type: int
+                required: True
+              Scn_cache_delay:
+                type: int
+                required: True
+              Scn_retries:
+                type: int
+                required: True
+              Scn_backoff:
+                type: int
+                required: True
+              SM_retries:
+                type: int
+                required: True
+              SM_timeout:
+                type: int
+                required: True
+              SM_url:
+                type: str
+                required: True
+              Telemetry_host:
+                type: str
+                required: True
+              Use_telemetry:
+                type: int
+                required: True
+      save:
+        json:
+          debug_orig: Debug
+          kv_url_orig: KV_url
+          nosm_orig: Nosm
+          port_orig: Port
+          scn_in_url_orig: Scn_in_url
+          scn_max_cache_orig: Scn_max_cache
+          scn_cache_delay_orig: Scn_cache_delay
+          scn_retries_orig: Scn_retries
+          scn_backoff_orig: Scn_backoff
+          sm_retries_orig: SM_retries
+          sm_timeout_orig: SM_timeout
+          sm_url_orig: SM_url
+          telemetry_host_orig: Telemetry_host
+          use_telemetry_orig: Use_telemetry
+
+  # PATCH /params empty payload
+  - name: Verify that a /params PATCH operation with an empty payload does not modify the service parameters
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+                enum:
+                  - !int "{debug_orig}"
+              KV_url:
+                type: str
+                required: True
+                enum:
+                  - "{kv_url_orig}"
+              Nosm:
+                type: int
+                required: True
+                enum:
+                  - !int "{nosm_orig}"
+              Port:
+                type: int
+                required: True
+                enum:
+                  - !int "{port_orig}"
+              Scn_in_url:
+                type: str
+                required: True
+                enum:
+                  - "{scn_in_url_orig}"
+              Scn_max_cache:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_max_cache_orig}"
+              Scn_cache_delay:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_cache_delay_orig}"
+              Scn_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_retries_orig}"
+              Scn_backoff:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_backoff_orig}"
+              SM_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_retries_orig}"
+              SM_timeout:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_timeout_orig}"
+              SM_url:
+                type: str
+                required: True
+                enum:
+                  - "{sm_url_orig}"
+              Telemetry_host:
+                type: str
+                required: True
+                enum:
+                  - "{telemetry_host_orig}"
+              Use_telemetry:
+                type: int
+                required: True
+                enum:
+                  - !int "{use_telemetry_orig}"
+
+  # PATCH /params new
+  - name: Verify that the HMNFD service parameters can be updated
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Debug":1,"KV_url":"http://cray-hmnfd-ct-test:9999","Nosm":1,"Scn_max_cache":999,"Scn_cache_delay":9,"Scn_retries":9,"Scn_backoff":9,"SM_retries":9,"SM_timeout":99,"SM_url":"http://cray-smd-ct-test:99999/hsm/v2","Telemetry_host":"kafka:9999:cray-hmsstatechange-notifications-ct-test","Use_telemetry":1}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+                enum:
+                  - 1
+              KV_url:
+                type: str
+                required: True
+                enum:
+                  - "http://cray-hmnfd-ct-test:9999"
+              Nosm:
+                type: int
+                required: True
+                enum:
+                  - 1
+              Port:
+                type: int
+                required: True
+                enum:
+                  - !int "{port_orig}"
+              Scn_in_url:
+                type: str
+                required: True
+                enum:
+                  - "{scn_in_url_orig}"
+              Scn_max_cache:
+                type: int
+                required: True
+                enum:
+                  - 999
+              Scn_cache_delay:
+                type: int
+                required: True
+                enum:
+                  - 9
+              Scn_retries:
+                type: int
+                required: True
+                enum:
+                  - 9
+              Scn_backoff:
+                type: int
+                required: True
+                enum:
+                  - 9
+              SM_retries:
+                type: int
+                required: True
+                enum:
+                  - 9
+              SM_timeout:
+                type: int
+                required: True
+                enum:
+                  - 99
+              SM_url:
+                type: str
+                required: True
+                enum:
+                  - "http://cray-smd-ct-test:99999/hsm/v2"
+              Telemetry_host:
+                type: str
+                required: True
+                enum:
+                  - "kafka:9999:cray-hmsstatechange-notifications-ct-test"
+              Use_telemetry:
+                type: int
+                required: True
+                enum:
+                  - 1
+
+  # GET /params new
+  - name: Verify that the new HMNFD service parameters can be retrieved
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      method: GET
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+                enum:
+                  - 1
+              KV_url:
+                type: str
+                required: True
+                enum:
+                  - "http://cray-hmnfd-ct-test:9999"
+              Nosm:
+                type: int
+                required: True
+                enum:
+                  - 1
+              Port:
+                type: int
+                required: True
+                enum:
+                  - !int "{port_orig}"
+              Scn_in_url:
+                type: str
+                required: True
+                enum:
+                  - "{scn_in_url_orig}"
+              Scn_max_cache:
+                type: int
+                required: True
+                enum:
+                  - 999
+              Scn_cache_delay:
+                type: int
+                required: True
+                enum:
+                  - 9
+              Scn_retries:
+                type: int
+                required: True
+                enum:
+                  - 9
+              Scn_backoff:
+                type: int
+                required: True
+                enum:
+                  - 9
+              SM_retries:
+                type: int
+                required: True
+                enum:
+                  - 9
+              SM_timeout:
+                type: int
+                required: True
+                enum:
+                  - 99
+              SM_url:
+                type: str
+                required: True
+                enum:
+                  - "http://cray-smd-ct-test:99999/hsm/v2"
+              Telemetry_host:
+                type: str
+                required: True
+                enum:
+                  - "kafka:9999:cray-hmsstatechange-notifications-ct-test"
+              Use_telemetry:
+                type: int
+                required: True
+                enum:
+                  - 1
+
+  # PATCH /params restore
+  - name: Verify that the original HMNFD service parameters can be restored
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      json: {"Debug": !int "{debug_orig}","KV_url":"{kv_url_orig}","Nosm": !int "{nosm_orig}","Scn_max_cache": !int "{scn_max_cache_orig}","Scn_cache_delay": !int "{scn_cache_delay_orig}","Scn_retries": !int "{scn_retries_orig}","Scn_backoff": !int "{scn_backoff_orig}","SM_retries": !int "{sm_retries_orig}","SM_timeout": !int "{sm_timeout_orig}","SM_url":"{sm_url_orig}","Telemetry_host":"{telemetry_host_orig}","Use_telemetry": !int "{use_telemetry_orig}"}
+      method: PATCH
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+                enum:
+                  - !int "{debug_orig}"
+              KV_url:
+                type: str
+                required: True
+                enum:
+                  - "{kv_url_orig}"
+              Nosm:
+                type: int
+                required: True
+                enum:
+                  - !int "{nosm_orig}"
+              Port:
+                type: int
+                required: True
+                enum:
+                  - !int "{port_orig}"
+              Scn_in_url:
+                type: str
+                required: True
+                enum:
+                  - "{scn_in_url_orig}"
+              Scn_max_cache:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_max_cache_orig}"
+              Scn_cache_delay:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_cache_delay_orig}"
+              Scn_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_retries_orig}"
+              Scn_backoff:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_backoff_orig}"
+              SM_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_retries_orig}"
+              SM_timeout:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_timeout_orig}"
+              SM_url:
+                type: str
+                required: True
+                enum:
+                  - "{sm_url_orig}"
+              Telemetry_host:
+                type: str
+                required: True
+                enum:
+                  - "{telemetry_host_orig}"
+              Use_telemetry:
+                type: int
+                required: True
+                enum:
+                  - !int "{use_telemetry_orig}"
+
+  # GET /params restore
+  - name: Verify that the original HMNFD service parameters have been restored
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/params"
+      method: GET
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_pykwalify
+        extra_kwargs:
+          schema:
+            type: map
+            mapping:
+              Debug:
+                type: int
+                required: True
+                enum:
+                  - !int "{debug_orig}"
+              KV_url:
+                type: str
+                required: True
+                enum:
+                  - "{kv_url_orig}"
+              Nosm:
+                type: int
+                required: True
+                enum:
+                  - !int "{nosm_orig}"
+              Port:
+                type: int
+                required: True
+                enum:
+                  - !int "{port_orig}"
+              Scn_in_url:
+                type: str
+                required: True
+                enum:
+                  - "{scn_in_url_orig}"
+              Scn_max_cache:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_max_cache_orig}"
+              Scn_cache_delay:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_cache_delay_orig}"
+              Scn_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_retries_orig}"
+              Scn_backoff:
+                type: int
+                required: True
+                enum:
+                  - !int "{scn_backoff_orig}"
+              SM_retries:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_retries_orig}"
+              SM_timeout:
+                type: int
+                required: True
+                enum:
+                  - !int "{sm_timeout_orig}"
+              SM_url:
+                type: str
+                required: True
+                enum:
+                  - "{sm_url_orig}"
+              Telemetry_host:
+                type: str
+                required: True
+                enum:
+                  - "{telemetry_host_orig}"
+              Use_telemetry:
+                type: int
+                required: True
+                enum:
+                  - !int "{use_telemetry_orig}"

@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2023] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,18 +20,32 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+# Tavern test cases for the HMNFD subscriptions API
+# Author: Mitch Schooler
+# Service: Hardware Management Node Fanout Daemon
 
-# Example test metrics test cases: 1
-# 1. GET /get API response code
+# HMS test metrics test cases: 1
+# DELETE /subscriptions/{xname}/agents
 ---
-test_name: Verify the service status resource example test
+test_name: Verify the HMNFD /subscriptions API
 
 stages:
-  # 1. GET /get API response code
-  - name: Ensure that the  service status can be retrieved
+  - name: Retrieve a node from HSM to be used in later stages
     request:
-      url: "{base_url}/get"
+      url: "{hsm_base_url}/hsm/v2/State/Components?type=Node&enabled=True"
       method: GET
       verify: !bool "{verify}"
     response:
       status_code: 200
+      save:
+        json:
+          node_xname: Components[0].ID
+
+  # DELETE /subscriptions/{xname}/agents
+  - name: Verify that all HMNFD state change notification subscriptions can be deleted for a component
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/subscriptions/{node_xname}/agents"
+      method: DELETE
+      verify: !bool "{verify}"
+    response:
+      status_code: 204

@@ -21,11 +21,11 @@ info:
     The REST API provides the following functions:
 
     * Subscription for component state changes:
-        * Hardware state (On, Off, Ready, Standby, Halt etc.)
-        * Logical state (arbitrary like AdminDown, Other)
-        * Role (Compute, Management, Application etc.)
+        * Hardware state (On, Off, Ready, Standby, Halt, etc.)
+        * Logical state (arbitrary like AdminDown, Other, etc.)
+        * Role (Compute, Management, Application, etc.)
+        * SubRole (Master, Worker, Storage, etc.)
         * Enabled state
-        * Flag (OK, Alert, Warning, etc.)
 
     * View current subscriptions
 
@@ -71,13 +71,13 @@ info:
     #### POST /subscriptions/{xname}/agents/{agent}
 
     A node will subscribe to whatever state change notifications (SCNs) it wants
-    to receive. Thus, the node needs to have a service running to which HMNFD can
-    send, via REST, the subscribed-to SCNs. A URL that tells where to send the
-    SCNs is provided as part of the request body schema. Once a subscribed-to
+    to receive.  Thus, the node needs to have a service running to which HMNFD can
+    send, via REST, the subscribed-to SCNs.  A URL that tells where to send the
+    SCNs is provided as part of the request body schema.  Once a subscribed-to
     SCN occurs, NFD sends it to the node's service via a REST call to the URL
     supplied during the subscribe operation.  The {xname} and {agent} segments
     of the URL state which node and which agent on that node are doing the
-    subscribing.  The subscription request info is in the body of the PUT 
+    subscribing.  The subscription request info is in the body of the POST
     payload.
 
     #### PATCH /subscriptions/{xname}/agents/{agent}
@@ -145,9 +145,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Does Not Exist. Endpoint not available.
+          description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '405':
@@ -192,8 +195,17 @@ paths:
           content:
             application/json:
               schema:
-#                $ref: '#/components/schemas/SubscribePost' ###ZZZZ change this?
+                #$ref: '#/components/schemas/SubscribePost' ###ZZZZ change this?
                 $ref: '#/components/schemas/SubscriptionListArray' ###ZZZZ change this?
+        '400':
+          description: Bad Request.  Invalid XName in URL path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
             Unauthorized.  RBAC prevented operation from executing, or
@@ -203,9 +215,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Does Not Exist. Endpoint not available.
+          description: Does Not Exist.  Endpoint not available.
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '405':
@@ -247,9 +262,18 @@ paths:
       responses:
         '204':
           description: Success.
+        '400':
+          description: Bad Request.  Invalid XName in URL path.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -302,9 +326,9 @@ paths:
       - in: path
         name: xname
         required: true
-        description: The XName of the subscribing component (typically a node)
+        description: The xname of the subscribing component (typically a node)
         schema:
-#          $ref: '#/components/schemas/XName.1.0.0'
+          #$ref: '#/components/schemas/XName.1.0.0'
           type: string
           example: x1000c0s0b0n0
       - in: path
@@ -321,14 +345,14 @@ paths:
       description: >-
         Subscribe to state change notifications for a set of components. Once this is
         done, the subscribing components will receive these notifications as they
-        occur, using the URL specified at subscription time.  The XName of the
+        occur, using the URL specified at subscription time.  The xname of the
         subscribing component as well as the software agent doing the subscribing
         are specified in the URL path.
       operationId: doSubscriptionPOSTV2
       requestBody:
         $ref: '#/components/requestBodies/SubscribePostV2'
       responses:
-        '204':
+        '200':
           description: Success.
         '400':
           description: >-
@@ -343,7 +367,7 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -398,7 +422,7 @@ paths:
       summary: Modify a subscription to state change notifications
       description: >-
         Modify an existing subscription to state change notifications for a 
-        component and software agent.  The XName of the subscribing component 
+        component and software agent.  The xname of the subscribing component 
         as well as the software agent doing the subscribing are specified in 
         the URL path.
       operationId: doSubscriptionPATCHV2
@@ -420,7 +444,7 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -475,16 +499,27 @@ paths:
       summary: Delete a specific state change notification subscription
       description: >-
         Delete a specific state change notification subscription associated 
-        with a target component and a target software agent.  The XName of the
+        with a target component and a target software agent.  The xname of the
         subscribing component as well as the software agent on the subscribing 
         component are specified in the URL path.
       operationId: doSubscriptionDeleteXNameAgentV2
       responses:
         '204':
           description: Success.
+        '400':
+          description: >-
+            Bad Request.  Invalid XName in URL path or No matching
+            subscription for DELETE.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '401':
           description: >-
-            Unauthorized. RBAC prevented operation from executing, or
+            Unauthorized.  RBAC prevented operation from executing, or
             authentication token has expired.
           content:
             application/json:
@@ -504,7 +539,7 @@ paths:
                 $ref: '#/components/schemas/Problem7807'
         '405':
           description: >-
-            Operation Not Permitted.  Only PUT and DELETE operations are allowed.
+            Operation Not Permitted.  Only DELETE operations are allowed.
           content:
             application/json:
               schema:
@@ -560,6 +595,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '405':
           description: >-
             Operation Not Permitted.  For /params, only GET and PATCH operations
@@ -590,7 +628,7 @@ paths:
       operationId: doParamsPatch
       responses:
         '200':
-          description: Success
+          description: Success.
         '400':
           description: >-
             Bad Request.  Malformed JSON.  Verify all JSON formatting in
@@ -798,7 +836,7 @@ paths:
       operationId: doSCN
       responses:
         '200':
-          description: Success
+          description: Success.
         '400':
           description: >-
             Bad Request.  Malformed JSON.  Verify all JSON formatting in

@@ -1,0 +1,65 @@
+# MIT License
+#
+# (C) Copyright [2023] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
+# Tavern test cases for the HMNFD scn API
+# Author: Mitch Schooler
+# Service: Hardware Management Node Fanout Daemon
+
+# HMS test metrics test cases: 2
+# POST /scn state
+# POST /scn role
+---
+test_name: Verify the HMNFD /scn API
+
+stages:
+  - name: Retrieve a node from HSM to be used in later stages
+    request:
+      url: "{hsm_base_url}/hsm/v2/State/Components?type=Node&enabled=True"
+      method: GET
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+      save:
+        json:
+          node_xname: Components[0].ID
+          node_state: Components[0].State
+          node_role: Components[0].Role
+
+  # POST /scn state
+  - name: Verify that we can send state change notifications with state to HMNFD for fanout
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/scn"
+      json: {"Components":["{node_xname}"],"Enabled":true,"State":"{node_state}"}
+      method: POST
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
+
+  # POST /scn role
+  - name: Verify that we can send state change notifications with role to HMNFD for fanout
+    request:
+      url: "{hmnfd_base_url}/hmi/v2/scn"
+      json: {"Components":["{node_xname}"],"Enabled":true,"Role":"{node_role}"}
+      method: POST
+      verify: !bool "{verify}"
+    response:
+      status_code: 200

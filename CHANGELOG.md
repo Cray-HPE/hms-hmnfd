@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.19.0] - 2023-06-27
+
+### Changed
+
+- Refactored docker-compose file for runCT environment and replaced RTS with RIE.
+- Updated CT tests to hms-test:5.1.0 image.
+- Added non-disruptive, disruptive, and destructive Tavern CT tests for HMNFD.
+- Made minor corrections and cleaned up the API swagger_v2 specification.
+
 ## [1.18.1] - 2023-01-12
 
 ### Changed
