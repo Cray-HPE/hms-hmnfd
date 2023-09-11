@@ -24,7 +24,7 @@ package main
 
 import (
 	"errors"
-	"github.com/Cray-HPE/hms-base"
+	"github.com/Cray-HPE/hms-base/v2"
 	"log"
 )
 

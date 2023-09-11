@@ -1,4 +1,4 @@
-module github.com/Cray-HPE/hms-base
+module github.com/Cray-HPE/hms-base/v2
 
 go 1.16
 

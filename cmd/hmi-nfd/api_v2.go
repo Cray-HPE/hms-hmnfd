@@ -25,12 +25,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Cray-HPE/hms-base"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+
+	base "github.com/Cray-HPE/hms-base/v2"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
+	"github.com/gorilla/mux"
 )
 
 func subscriptionsAgentDeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +40,7 @@ func subscriptionsAgentDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
 	agent, _ := uvars["agent"]
-	xname := base.VerifyNormalizeCompID(xn)
+	xname := xnametypes.VerifyNormalizeCompID(xn)
 
 	if xname == "" {
 		log.Printf("ERROR: Invalid XName.\n")
@@ -121,7 +123,7 @@ func subscriptionsXNameDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	// /subscriptions/{xname}/agent
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
-	xname := base.VerifyNormalizeCompID(xn)
+	xname := xnametypes.VerifyNormalizeCompID(xn)
 
 	if xname == "" {
 		log.Printf("ERROR: Invalid XName.\n")
@@ -192,7 +194,7 @@ func subscriptionsAgentPostHandler(w http.ResponseWriter, r *http.Request) {
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
 	agent, _ := uvars["agent"]
-	xname := base.VerifyNormalizeCompID(xn)
+	xname := xnametypes.VerifyNormalizeCompID(xn)
 
 	if xname == "" {
 		log.Printf("ERROR: Invalid XName.\n")
@@ -239,7 +241,7 @@ func subscriptionsAgentPostHandler(w http.ResponseWriter, r *http.Request) {
 			string(body))
 	}
 
-	if base.GetHMSType(xname) == base.HMSTypeInvalid {
+	if xnametypes.GetHMSType(xname) == xnametypes.HMSTypeInvalid {
 		//This is not a valid XName.  We can't accept this, since it will
 		//make pruning not work.
 		log.Printf("Invalid subscriber XName: '%s'.\n", xname)
@@ -316,7 +318,7 @@ func subscriptionsAgentPatchHandler(w http.ResponseWriter, r *http.Request) {
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
 	agent, _ := uvars["agent"]
-	xname := base.VerifyNormalizeCompID(xn)
+	xname := xnametypes.VerifyNormalizeCompID(xn)
 
 	if xname == "" {
 		log.Printf("ERROR: Invalid XName.\n")
@@ -469,7 +471,7 @@ func subscriptionsXNameGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	uvars := mux.Vars(r)
 	xnraw, _ := uvars["xname"]
-	xname := base.VerifyNormalizeCompID(xnraw)
+	xname := xnametypes.VerifyNormalizeCompID(xnraw)
 	if xname == "" {
 		log.Printf("ERROR: Invalid XName.\n")
 		pdet := base.NewProblemDetails("about:blank",
