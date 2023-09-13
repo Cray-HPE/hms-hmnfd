@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2019, 2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019,2021,2023] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -368,10 +368,10 @@ func scnCompare(sent, rcv []Scn) string {
 		enblr := (rcv[ix].Enabled != nil) && (*rcv[ix].Enabled != false)
 
 		if (sent[ix].State != rcv[ix].State) ||
-					(sent[ix].Flag != rcv[ix].Flag) ||
-					(sent[ix].SoftwareStatus != rcv[ix].SoftwareStatus) ||
-					(enbls != enblr) ||
-					(sent[ix].Role != rcv[ix].Role) {
+			(sent[ix].Flag != rcv[ix].Flag) ||
+			(sent[ix].SoftwareStatus != rcv[ix].SoftwareStatus) ||
+			(enbls != enblr) ||
+			(sent[ix].Role != rcv[ix].Role) {
 			return fmt.Sprintf("SCN mismatch: sent: '%v', rcv: '%v'",
 				sent[ix], rcv[ix])
 		}
@@ -496,7 +496,7 @@ func TestScnHandler2(t *testing.T) {
 		t.Errorf("SCN Miscompare: %s", cmpStr)
 	}
 
-	//2. 5 SCNs of the same type, cache (of 4) send, then single cached send.  
+	//2. 5 SCNs of the same type, cache (of 4) send, then single cached send.
 
 	hsmscn.Components = []string{}
 	scnsRcv = []Scn{}
@@ -525,7 +525,7 @@ func TestScnHandler2(t *testing.T) {
 		t.Errorf("SCN Miscompare: %s", cmpStr)
 	}
 
-	//3. 2 SCNs of the same type, 1 SCN of a different type.  Cache send, 
+	//3. 2 SCNs of the same type, 1 SCN of a different type.  Cache send,
 	//   then single cached send.
 
 	hsmscn.Components = []string{}
