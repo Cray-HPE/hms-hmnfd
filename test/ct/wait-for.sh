@@ -23,8 +23,12 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 # wait-for.sh; used by runCT.sh to make sure HSM has been populated with data before running.
+# The emulator-loader in docker-compose.test.ct.yaml creates RedfishEndpoints in HSM,
+# for which, the components will evently be discovered.
+# This waits for those components. Note that emulator-loader also directly creates components
+# of a type other than Node.
 echo "Initiating..."
-URL="http://cray-smd:27779/hsm/v2/State/Components"
+URL="http://cray-smd:27779/hsm/v2/State/Components?type=Node"
 sentry=1
 limit=200
 while :; do
