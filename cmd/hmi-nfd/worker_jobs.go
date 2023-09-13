@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2019, 2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019,2021,2023] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -24,14 +24,13 @@ package main
 
 import (
 	"errors"
-	"log"
 	"github.com/Cray-HPE/hms-base"
+	"log"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // Job definitions
 ///////////////////////////////////////////////////////////////////////////////
-
 
 const (
 	JTYPE_INVALID  base.JobType = 0
@@ -47,17 +46,16 @@ var JTypeString = map[base.JobType]string{
 	JTYPE_MAX:      "JTYPE_MAX",
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Job: JTYPE_SCN_SEND
 ///////////////////////////////////////////////////////////////////////////////
 
 type JobSCNSend struct {
-    Status base.JobStatus
-    Err error
-    SCNData Scn
-    Subscriber string
-    Url string
+	Status     base.JobStatus
+	Err        error
+	SCNData    Scn
+	Subscriber string
+	Url        string
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,12 +68,12 @@ type JobSCNSend struct {
 /////////////////////////////////////////////////////////////////////////////
 
 func NewJobSCNSend(sd Scn, subscriber string, url string) base.Job {
-    j := new(JobSCNSend)
-    j.Status = base.JSTAT_DEFAULT
-    j.SCNData = sd
-    j.Subscriber = subscriber
-    j.Url = url
-    return j
+	j := new(JobSCNSend)
+	j.Status = base.JSTAT_DEFAULT
+	j.SCNData = sd
+	j.Subscriber = subscriber
+	j.Url = url
+	return j
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -88,7 +86,7 @@ func NewJobSCNSend(sd Scn, subscriber string, url string) base.Job {
 /////////////////////////////////////////////////////////////////////////////
 
 func (j *JobSCNSend) Log(format string, a ...interface{}) {
-    log.Printf(format,a...)
+	log.Printf(format, a...)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,7 +97,7 @@ func (j *JobSCNSend) Log(format string, a ...interface{}) {
 /////////////////////////////////////////////////////////////////////////////
 
 func (j *JobSCNSend) Type() base.JobType {
-    return JTYPE_SCN_SEND
+	return JTYPE_SCN_SEND
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -110,7 +108,7 @@ func (j *JobSCNSend) Type() base.JobType {
 /////////////////////////////////////////////////////////////////////////////
 
 func (j *JobSCNSend) Run() {
-    sendSCNToSubscriber(j.SCNData, j.Subscriber, j.Url)
+	sendSCNToSubscriber(j.SCNData, j.Subscriber, j.Url)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -120,11 +118,11 @@ func (j *JobSCNSend) Run() {
 // Return: Current job status, and any error info (if any).
 /////////////////////////////////////////////////////////////////////////////
 
-func (j *JobSCNSend) GetStatus() (base.JobStatus,error) {
-    if (j.Status == base.JSTAT_ERROR) {
-        return j.Status,j.Err
-    }
-    return j.Status,nil
+func (j *JobSCNSend) GetStatus() (base.JobStatus, error) {
+	if j.Status == base.JSTAT_ERROR {
+		return j.Status, j.Err
+	}
+	return j.Status, nil
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -135,19 +133,19 @@ func (j *JobSCNSend) GetStatus() (base.JobStatus,error) {
 // Return:        Previous job status; nil on success, error string on error.
 /////////////////////////////////////////////////////////////////////////////
 
-func (j *JobSCNSend) SetStatus(newStatus base.JobStatus, err error) (base.JobStatus,error) {
-    if newStatus >= base.JSTAT_MAX {
-        return j.Status, errors.New("Error: Invalid Status")
-    } else {
-        oldStatus := j.Status
-        j.Status = newStatus
-        j.Err = err
-        return oldStatus, nil
-    }
+func (j *JobSCNSend) SetStatus(newStatus base.JobStatus, err error) (base.JobStatus, error) {
+	if newStatus >= base.JSTAT_MAX {
+		return j.Status, errors.New("Error: Invalid Status")
+	} else {
+		oldStatus := j.Status
+		j.Status = newStatus
+		j.Err = err
+		return oldStatus, nil
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Cancel a job.  Note that this JobType does not support cancelling the 
+// Cancel a job.  Note that this JobType does not support cancelling the
 // job while it is being processed
 //
 // Args:   None
@@ -155,9 +153,8 @@ func (j *JobSCNSend) SetStatus(newStatus base.JobStatus, err error) (base.JobSta
 /////////////////////////////////////////////////////////////////////////////
 
 func (j *JobSCNSend) Cancel() base.JobStatus {
-	if (j.Status == base.JSTAT_QUEUED || j.Status == base.JSTAT_DEFAULT) {
+	if j.Status == base.JSTAT_QUEUED || j.Status == base.JSTAT_DEFAULT {
 		j.Status = base.JSTAT_CANCELLED
 	}
 	return j.Status
 }
-
