@@ -236,20 +236,6 @@ services:
         \"Password\":\"root_password\"
       }]}' http://cray-smd:27779/hsm/v2/Inventory/RedfishEndpoints &&
 
-      echo \"== put component x0c0s4b0n0v0\" &&
-      curl -v -X PUT -d '{ \"Component\":
-        {
-          \"Arch\": \"X86\",
-          \"Class\": \"Mountain\",
-          \"State\": \"On\",
-          \"Flag\": \"OK\",
-          \"ID\": \"x0c0s4b0n0v0\",
-          \"NID\": 101003,
-          \"NetType\": \"Sling\",
-          \"Role\": \"Management\"
-        },
-      \"Force\": false }' http://cray-smd:27779/hsm/v2/State/Components/x0c0s4b0n0v0 &&
-
       echo \"== SUCCESS\"
       "
     depends_on:

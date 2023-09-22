@@ -30,6 +30,15 @@
 test_name: Verify the HMNFD /subscriptions API for virutal nodes
 
 stages:
+  - name: Setup - Create a VirtualNode in HSM
+    request:
+      url: "{hsm_base_url}/hsm/v2/State/Components/{virtual_node_xname}"
+      json: { "Component": { "Arch": "X86", "Class": "Mountain", "State": "On", "Flag": "OK", "ID": "{virtual_node_xname}", "NID": 101003, "NetType": "Sling", "Role": "Management" }, "Force": true }
+      method: PUT
+      verify: !bool "{verify}"
+    response:
+      status_code: 204
+
   - name: Retrieve a virtual node from HSM to be used in later stages
     request:
       url: "{hsm_base_url}/hsm/v2/State/Components?type=VirtualNode&enabled=True"
@@ -49,3 +58,11 @@ stages:
       verify: !bool "{verify}"
     response:
       status_code: 204
+
+  - name: Clean up - Delete VirtualNode in HSM
+    request:
+      url: "{hsm_base_url}/hsm/v2/State/Components/{virtual_node_xname}"
+      method: DELETE
+      verify: !bool "{verify}"
+    response:
+      status_code: 200
