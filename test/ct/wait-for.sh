@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022-2023] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,8 +23,12 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 # wait-for.sh; used by runCT.sh to make sure HSM has been populated with data before running.
+# The emulator-loader in docker-compose.test.ct.yaml creates RedfishEndpoints in HSM,
+# for which, the components will evently be discovered.
+# This waits for those components. Note that emulator-loader also directly creates components
+# of a type other than Node.
 echo "Initiating..."
-URL="http://cray-smd:27779/hsm/v2/State/Components"
+URL="http://cray-smd:27779/hsm/v2/State/Components?type=Node"
 sentry=1
 limit=200
 while :; do

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.21.0] - 2023-09-21
+
+### Added
+
+- Added support for VirtualNode types
+
 ## [1.20.0] - 2023-09-13
 
 ### Changed

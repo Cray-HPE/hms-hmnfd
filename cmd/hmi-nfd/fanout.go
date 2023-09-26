@@ -26,13 +26,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Cray-HPE/hms-base"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	base "github.com/Cray-HPE/hms-base/v2"
 )
 
 // Used for subscription tracking to insure we don't send > 1

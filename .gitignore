@@ -11,3 +11,6 @@ test/integration/configs
 *.csr
 *.key
 *.pem
+
+# vim files
+*.swp

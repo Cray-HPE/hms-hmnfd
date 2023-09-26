@@ -8,3 +8,4 @@ variables:
   hsm_base_url: http://cray-smd:27779
   test_agent: cray-test-service-999z9z9999-zz9zz
   test_agent_host: cray-test-service
+  virtual_node_xname: x9999c0s4b0n0v0

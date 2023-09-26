@@ -25,7 +25,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -687,7 +688,7 @@ func doSubscribePost(w http.ResponseWriter, r *http.Request) {
 		subscriber_xname = jdata.Subscriber[ix+1:]
 	}
 
-	if base.GetHMSType(subscriber_xname) == base.HMSTypeInvalid {
+	if xnametypes.GetHMSType(subscriber_xname) == xnametypes.HMSTypeInvalid {
 		//This is not a valid XName.  We can't accept this, since it will
 		//make pruning not work.
 		log.Printf("Invalid subscriber XName: '%s'.\n", subscriber_xname)

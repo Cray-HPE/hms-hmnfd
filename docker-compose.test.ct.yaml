@@ -88,7 +88,7 @@ services:
       - hmnfd
 
   cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.13.0
     environment:
       - SMD_DBHOST=hmsds-postgres
       - SMD_DBPORT=5432
@@ -99,7 +99,7 @@ services:
     command: /entrypoint.sh smd-init
 
   cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.13.0
     environment:
       - POSTGRES_HOST=hmsds-postgres
       - POSTGRES_PORT=5432
@@ -204,11 +204,13 @@ services:
   #
   # Emulated hardware
   #
+  # When adding additional HSM resources here, verify that their presence will still work with test/ct/wait-for.sh
   emulator-loader:
     image: artifactory.algol60.net/docker.io/library/golang:1.16-alpine
     command: >
       sh -c "apk add curl && sleep 10 &&
-      curl -X POST -d '{\"RedfishEndpoints\":[{
+      echo \"== post redfish endpoints\" &&
+      curl -v -X POST -d '{\"RedfishEndpoints\":[{
         \"ID\":\"x0c0s1b0\",
         \"FQDN\":\"x0c0s1b0\",
         \"RediscoverOnUpdate\":true,
@@ -232,7 +234,10 @@ services:
         \"RediscoverOnUpdate\":true,
         \"User\":\"root\",
         \"Password\":\"root_password\"
-      }]}' http://cray-smd:27779/hsm/v2/Inventory/RedfishEndpoints"
+      }]}' http://cray-smd:27779/hsm/v2/Inventory/RedfishEndpoints &&
+
+      echo \"== SUCCESS\"
+      "
     depends_on:
       - cray-smd
       - rfemulator0
