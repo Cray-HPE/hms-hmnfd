@@ -30,7 +30,7 @@ RUN go env -w GO111MODULE=auto
 
 COPY fake-subscriber.go ${GOPATH}/src/fake-subscriber/
 
-RUN set -ex && go build -v -tags musl -i -o /usr/local/bin/fake-subscriber fake-subscriber
+RUN set -ex && go build -v -tags musl -o /usr/local/bin/fake-subscriber fake-subscriber
 
 ### Final Stage ###
 
