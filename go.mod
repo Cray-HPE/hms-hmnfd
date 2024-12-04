@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/Cray-HPE/hms-base/v2 v2.1.0
 	github.com/Cray-HPE/hms-hmetcd v1.11.0
-	github.com/Cray-HPE/hms-msgbus v1.11.0
+	github.com/Cray-HPE/hms-msgbus v1.12.0
 	github.com/Cray-HPE/hms-xname v1.4.0
 	github.com/gorilla/mux v1.8.0
 )

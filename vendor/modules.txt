@@ -4,8 +4,8 @@ github.com/Cray-HPE/hms-base/v2
 # github.com/Cray-HPE/hms-hmetcd v1.11.0
 ## explicit; go 1.23
 github.com/Cray-HPE/hms-hmetcd
-# github.com/Cray-HPE/hms-msgbus v1.11.0
-## explicit; go 1.16
+# github.com/Cray-HPE/hms-msgbus v1.12.0
+## explicit; go 1.23
 github.com/Cray-HPE/hms-msgbus
 # github.com/Cray-HPE/hms-xname v1.4.0
 ## explicit; go 1.23

@@ -1,67 +1,85 @@
-GO KAFKA PACKAGE USAGE
+# HMS Message Bus Package
 
-Package to import:
+## Overview
 
-  github.com/Cray-HPE/hms-common/pkg/msgbus
+This Go package encapsulates the use of the Kafka message bus system,
+providing a simpler, more convenient interface for the user.  Encapsulation
+of the underlying Kafka interface also allows for easy changing of the
+underlying more complex Go packages if desired without changing the user's
+interface.
 
-Interface:
+## Usage
 
-msgbus.MsgBusIO
+In general, the flow of events is:
 
-    type MsgBusIO interface {
-        Disconnect() error
-        MessageWrite(msg string) error
-        MessageRead() (string,error)
-        MessageAvailable() int          //check for availability
-        RegisterCB(cbfunc CBFunc) error
-        UnregisterCB() error
-        Status() int
-    }
-
-Configuration data and constants:
-
-    type MsgBusTech int
-    type BlockingMode int
-    type BusStatus int
-    type BusDir int
-    type SubscriptionToken int
-    type CallbackToken int
-    type CBFunc func(msg string)
-
-    const (
-        BusTechKafka MsgBusTech = 1
-        //Add more if need be
-    )
-
-    const (
-        NonBlocking BlockingMode = 1
-        Blocking    BlockingMode = 2
-    )
-
-    const (
-        StatusOpen   BusStatus = 1
-        StatusClosed BusStatus = 2
-    )
-
-    const (
-        BusWriter BusDir = 1
-        BusReader BusDir = 2
-    )
-
-    type MsgBusConfig struct {
-        BusTech MsgBusTech      //currently only BusTechKafka
-        Host string             //msgbus host defaults to "localhost"
-        Port int                //msgbus port
-        Blocking BlockingMode   //Defaults to Blocking
-        Direction BusDir        //BusWriter or BusReader
-        ConnectRetries int      //# of times to attempt initial connection 
-        Topic string            //Topic to subscribe to or inject into
-    }
+* Create a message bus handle, for either reading or writing of messages
+* For read operations, if asynchronous/control loop operation is desired, register a callback for inbound data.
+* When a message is to be written, call the appropriate *write* function.
+* If synchronous reads are to be done, call the appropriate *read* function.
 
 
 
-METHODS:
+## Interface
 
+```
+type MsgBusIO interface {
+    Disconnect() error
+    MessageWrite(msg string) error
+    MessageRead() (string,error)
+    MessageAvailable() int          //check for availability
+    RegisterCB(cbfunc CBFunc) error
+    UnregisterCB() error
+    Status() int
+}
+```
+
+## Configuration data and constants
+
+```
+type MsgBusTech int
+type BlockingMode int
+type BusStatus int
+type BusDir int
+type SubscriptionToken int
+type CallbackToken int
+type CBFunc func(msg string)
+
+const (
+    BusTechKafka MsgBusTech = 1
+    //Add more if need be
+)
+
+const (
+    NonBlocking BlockingMode = 1
+    Blocking    BlockingMode = 2
+)
+
+const (
+    StatusOpen   BusStatus = 1
+    StatusClosed BusStatus = 2
+)
+
+const (
+    BusWriter BusDir = 1
+    BusReader BusDir = 2
+)
+
+// Used to configure a msgbus connection.  
+
+type MsgBusConfig struct {
+    BusTech MsgBusTech      //currently only BusTechKafka
+    Host string             //msgbus host defaults to "localhost"
+    Port int                //msgbus port
+    Blocking BlockingMode   //Defaults to Blocking
+    Direction BusDir        //BusWriter or BusReader
+    ConnectRetries int      //# of times to attempt initial connection 
+    Topic string            //Topic to subscribe to or inject into
+}
+```
+
+## Methods
+
+```
 /////////////////////////////////////////////////////////////////////////////
 // Swap out default logger with a different instance of a Logrus logger.
 // Library will use default logger if this function is never called.
@@ -155,20 +173,17 @@ UnregisterCB() error
 /////////////////////////////////////////////////////////////////////////////
 
 Status() int
+```
 
 
+## Use Cases And Examples
 
-USE CASES AND EXAMPLES
-
-
+```
 /////////////////////////////////////////////////////////////////////////////
 //Opening a connection to a message bus for writing messages:
 /////////////////////////////////////////////////////////////////////////////
 
-    import (
-       "hss/msgbus"
-    )
-
+...
     // Message bus connection configuration
 
     mcfg := msgbus.MsgBusConfig{BusTech: msgbus.BusTechKafka,
@@ -184,35 +199,38 @@ USE CASES AND EXAMPLES
     mbusW,err := msgbus.Connect(mcfg)
 
     if (err != nil) {
-        fmt.Println("Error connecting to bus:",err)
-        os.Exit(1)
+        log.Printf("Error connecting to bus: %v",err)
+        return
     }
 
-    ...
+...
+```
 
+```
 /////////////////////////////////////////////////////////////////////////////
 //Writing a message:
 /////////////////////////////////////////////////////////////////////////////
 
-    msg := fmt.Sprintf("The Rain In Spain")
+...
+    msg := fmt.Sprintf("%d inches of rain in Spain fell mainly on the plain.",
+				inchesTotal)
 
     //Will potentially block if the connection was opened in Blocking mode;
     //if opened in NonBlocking mode will not block.
 
     err := mbusW.MessageWrite(msg)
     if (err != nil) {
-        fmt.Println("ERROR writing message to bus:",err)
+        log.Printf("ERROR writing message to bus: %v",err)
     }
-    ...
+...
+```
 
+```
 /////////////////////////////////////////////////////////////////////////////
 //Opening a connection to a message bus for reading messages:
 /////////////////////////////////////////////////////////////////////////////
 
-    import (
-       "hss/msgbus"
-    )
-
+...
     // Message bus connection configuration
 
     mcfg := msgbus.MsgBusConfig{BusTech: msgbus.BusTechKafka,
@@ -228,39 +246,43 @@ USE CASES AND EXAMPLES
     mbusR,err := msgbus.Connect(mcfg)
 
     if (err != nil) {
-        fmt.Println("Error connecting to bus:",err)
-        os.Exit(1)
+        log.Printf("Error connecting to bus: %v",err)
+        return
     }
 
-    ...
+...
+```
 
+```
 /////////////////////////////////////////////////////////////////////////////
 //Reading a message using a blocking read operation:
 /////////////////////////////////////////////////////////////////////////////
 
-    ...
+...
     //First check if a message is available (if desired)
 
     if (mbusR.MessageAvailable() != 0) {
-        msg,err := mbusR.MessageRead()
+        msg,err := mbusR.MessageRead() //will block until message is ready
         if (err != nil) {
-            fmt.Println("ERROR reading message:",err)
+            log.Printf("ERROR reading message: %v",err)
         } else {
-            fmt.Printf("Message received: '%s'\n",msg)
+            log.Printf("Message received: '%s'",msg)
         }
     }
-    ...
+...
+```
 
+```
 /////////////////////////////////////////////////////////////////////////////
 //Reading a message using a callback function:
 /////////////////////////////////////////////////////////////////////////////
 
 func my_cbfunc(msg string) {
-    fmt.Printf("Message Received: '%s'\n",msg)
+    log.Printf("Message Received: '%s'",msg)
 }
 
 func myfunc() {
-    ...
+...
     // Open a message bus reader connection, as above
 
     // Message bus connection configuration
@@ -278,15 +300,15 @@ func myfunc() {
     mbusR,err := msgbus.Connect(mcfg)
 
     if (err != nil) {
-        fmt.Println("Error connecting to bus:",err)
-        os.Exit(1)
+        log.Printf("Error connecting to bus: %v",err)
+        return
     }
 
     //Register a function to be called when messages arrive
 
     err = mbusR.RegisterCB(my_cbfunc)
     if (err != nil) {
-        fmt.Println("ERROR registering callback function:",err)
+        log.Printf("ERROR registering callback function: %v",err)
     }
 
     //Do other stuff.  my_cbfunc() fill be called when messages arrive.
@@ -298,33 +320,29 @@ func myfunc() {
     mbusR.UnregisterCB()
 
     ...
-}
+```
 
+```
 /////////////////////////////////////////////////////////////////////////////
 //Closing a connection
 /////////////////////////////////////////////////////////////////////////////
 
-   ...
+...
    mbusW.Disconnect()
-   ...
+...
+```
+
+## NOTES
+
+* At this time a connection can be opened for reading or writing, but not both.   If both reading and writing are to be done, separate connections and handles must be used.
+
+* There is currently no re-connect logic.  If a connection dies, the application will have to close and then re-open a new connection.
+
+* Trying to use a callback function and MessageAvailable() and MessageRead() will result in undefined behavior.
 
 
-NOTES:
+**BUILD NOTES:**
 
- o At this time a connection can be opened for reading or writing, but not
-   both.   If both reading and writing are to be done, separate connections
-   and handles must be used.
-
- o There is currently no re-connect logic.  If a connection dies, the
-   application will have to close and then re-open a new connection.
-
- o Trying to use a callback function and MessageAvailable() and MessageRead()
-   will result in undefined behavior.
-
-BUILD NOTES:
-
- o Any microservice using hms-msgbus starting at version 1.11.0 needs to
-   use '-tags musl' in any 'go build' or 'go test' instruction, which
-   will affect Dockerfiles.
+* Any microservice using hms-msgbus starting at version 1.11.0 needs to use '-tags musl' in any 'go build' or 'go test' instruction, which will affect Dockerfiles.
 
 

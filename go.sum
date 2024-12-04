@@ -2,8 +2,8 @@ github.com/Cray-HPE/hms-base/v2 v2.1.0 h1:RtK/fFda1tQDBtmg/c0LnxhcHwTwK3DSmHQcWi
 github.com/Cray-HPE/hms-base/v2 v2.1.0/go.mod h1:zf6uo5y71JFMKSj/VbC2ixxi/Y1pCtZCjCickStvRK8=
 github.com/Cray-HPE/hms-hmetcd v1.11.0 h1:j8Xm9uapvEMEv+oHotrLC+6qI2zC4X23pySOOF5emV4=
 github.com/Cray-HPE/hms-hmetcd v1.11.0/go.mod h1:G04tF9/EFB+mgcM9EdudVZLN8jqdBVSFlu9DmyjJLVs=
-github.com/Cray-HPE/hms-msgbus v1.11.0 h1:w5ThMJ8D5pmuvXhc817rJDG4TTixEfvtcDi3tR6eOUM=
-github.com/Cray-HPE/hms-msgbus v1.11.0/go.mod h1:cxn+lUOq3tpY3+KdFml6L56ZQo8sqN2VoZ6gGxds6o8=
+github.com/Cray-HPE/hms-msgbus v1.12.0 h1:boMyxaBnhBiE2i/ObFNmR60pR9hntqyyODHSPxkskzA=
+github.com/Cray-HPE/hms-msgbus v1.12.0/go.mod h1:Fn/d9+tJR2hpFMY9Yuq9vkQ4RPFeMYWDo4Rzsh8XG/s=
 github.com/Cray-HPE/hms-xname v1.4.0 h1:i47YmE8rbSfJ64simKCCC6ZVcGid3rDIX6/jfVbISAM=
 github.com/Cray-HPE/hms-xname v1.4.0/go.mod h1:wH7t1UXYck0VdHSWjrMsxZmaCK5W1lmwgNnsYAFPTus=
 github.com/confluentinc/confluent-kafka-go v1.7.0 h1:tXh3LWb2Ne0WiU3ng4h5qiGA9XV61rz46w60O+cq8bM=
