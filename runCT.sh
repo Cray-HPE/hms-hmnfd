@@ -32,7 +32,7 @@ echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
 echo "COMPOSE_FILE: $COMPOSE_FILE"
 
 function cleanup() {
-  docker-compose down
+  docker compose down
   if [[ $? -ne 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
@@ -42,12 +42,12 @@ function cleanup() {
 
 # Get the base containers running
 echo "Starting containers..."
-docker-compose build --no-cache
-docker-compose up --exit-code-from wait-for-smd wait-for-smd
-docker-compose up -d cray-hmnfd
+docker compose build --no-cache
+docker compose up --exit-code-from wait-for-smd wait-for-smd
+docker compose up -d cray-hmnfd
 
 # Run the CT smoke tests
-docker-compose up --exit-code-from smoke-tests smoke-tests
+docker compose up --exit-code-from smoke-tests smoke-tests
 test_result=$?
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
@@ -56,7 +56,7 @@ if [[ $test_result -ne 0 ]]; then
 fi
 
 # Run the CT Tavern tests
-docker-compose up --exit-code-from tavern-tests tavern-tests
+docker compose up --exit-code-from tavern-tests tavern-tests
 test_result=$?
 if [[ $test_result -ne 0 ]]; then
   echo "CT tavern tests FAILED!"

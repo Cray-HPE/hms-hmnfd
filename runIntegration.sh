@@ -33,7 +33,7 @@ echo "COMPOSE_FILE: $COMPOSE_FILE"
 
 
 function cleanup() {
-  docker-compose down
+  docker compose down
   if [[ $? -ne 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
@@ -44,9 +44,9 @@ function cleanup() {
 
 # Get the base containers running
 echo "Starting containers..."
-docker-compose build
-docker-compose up -d cray-hmnfd
-docker-compose up --exit-code-from integration-tests integration-tests
+docker compose build
+docker compose up -d cray-hmnfd
+docker compose up --exit-code-from integration-tests integration-tests
 
 test_result=$?
 
