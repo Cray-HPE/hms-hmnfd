@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2019-2022,2024] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022,2024-2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -45,8 +45,15 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-hmnfd/vendor
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -tags musl -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmnfd/cmd/hmi-nfd
+# Set profiling to disabled by default
+ARG ENABLE_PPROF=true
 
+# Conditionally build with the pprof tag if profiling is enabled
+RUN if [ "$ENABLE_PPROF" = "true" ]; then \
+        set -ex && go build -v -tags "musl pprof" -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmnfd/cmd/hmi-nfd; \
+    else \
+        set -ex && go build -v -tags musl -o /usr/local/bin/hmnfd github.com/Cray-HPE/hms-hmnfd/cmd/hmi-nfd; \
+    fi
 
 ### Final Stage ###
 FROM artifactory.algol60.net/docker.io/alpine:3.15

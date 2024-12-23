@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.23.0] - 2025-01-08
+
+### Added
+
+- Added support for ppprof builds
+
 ## [1.22.0] - 2023-12-03
 
 ### Changed
