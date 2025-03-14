@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.24.0] - 2025-03-18
+
+### Security
+
+- Updated image and module dependencies for security updates
+- Various code changes to accomodate module updates
+
 ## [1.23.0] - 2025-01-08
 
 ### Added

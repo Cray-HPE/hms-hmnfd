@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2023] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2023,2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -48,7 +48,7 @@ stages:
       method: POST
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # POST /liveness fails
   - name: Verify that /liveness rejects POST requests
@@ -57,7 +57,7 @@ stages:
       method: POST
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # POST /readiness fails
   - name: Verify that /readiness rejects POST requests
@@ -66,7 +66,7 @@ stages:
       method: POST
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # PUT /health fails
   - name: Verify that /health rejects PUT requests
@@ -102,7 +102,7 @@ stages:
       method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # PATCH /liveness fails
   - name: Verify that /liveness rejects PATCH requests
@@ -111,7 +111,7 @@ stages:
       method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # PATCH /readiness fails
   - name: Verify that /readiness rejects PATCH requests
@@ -120,7 +120,7 @@ stages:
       method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # DELETE /health fails
   - name: Verify that /health rejects DELETE requests
@@ -129,7 +129,7 @@ stages:
       method: DELETE
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # DELETE /liveness fails
   - name: Verify that /liveness rejects DELETE requests
@@ -138,7 +138,7 @@ stages:
       method: DELETE
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
   # DELETE /readiness fails
   - name: Verify that /readiness rejects DELETE requests
@@ -147,4 +147,4 @@ stages:
       method: DELETE
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
