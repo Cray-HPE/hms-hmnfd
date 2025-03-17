@@ -15,6 +15,9 @@ These are changes to charts in support of:
 
 - Updated image and module dependencies for security updates
 - Various code changes to accomodate module updates
+- Added image-pprof Makefile support
+- Resolved build warnings in Dockerfiles and docker compose files
+- Updated tests to look for 404 codes instead of 405 code due to gorilla/mux update
 
 ## [1.23.0] - 2025-01-08
 
