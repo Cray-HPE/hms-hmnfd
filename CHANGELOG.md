@@ -18,6 +18,7 @@ These are changes to charts in support of:
 - Added image-pprof Makefile support
 - Resolved build warnings in Dockerfiles and docker compose files
 - Updated tests to look for 404 codes instead of 405 code due to gorilla/mux update
+- Internal tracking ticket: CASMHMS-6417
 
 ## [1.23.0] - 2025-01-08
 
