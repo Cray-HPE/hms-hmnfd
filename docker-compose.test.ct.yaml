@@ -205,7 +205,7 @@ services:
   #
   # When adding additional HSM resources here, verify that their presence will still work with test/ct/wait-for.sh
   emulator-loader:
-    image: artifactory.algol60.net/docker.io/library/golang:1.23-alpine
+    image: artifactory.algol60.net/docker.io/library/golang:1.24-alpine
     command: >
       sh -c "apk add curl && sleep 10 &&
       echo \"== post redfish endpoints\" &&
