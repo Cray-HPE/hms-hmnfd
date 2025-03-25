@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2019-2022,2023] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019-2022,2023,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -515,7 +515,7 @@ func parseParamJson(param_json []byte, whence int) error {
 			}
 		}
 
-		rerr := fmt.Errorf(errstr)
+		rerr := fmt.Errorf("%s", errstr)
 		return rerr
 	}
 
@@ -582,7 +582,7 @@ func parseParamJson(param_json []byte, whence int) error {
 	}
 
 	if bad != 0 {
-		rerr := fmt.Errorf(errstr)
+		rerr := fmt.Errorf("%s", errstr)
 		return rerr
 	}
 

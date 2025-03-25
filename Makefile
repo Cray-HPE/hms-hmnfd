@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2019-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2019-2022,2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,10 +25,13 @@ NAME ?= cray-hmnfd
 VERSION ?= $(shell cat .version)
 DOCKER_IMAGE ?= ${NAME}:${VERSION}
 
-all: image unittest integration snyk ct ct_image
+all: image image-pprof unittest integration snyk ct ct_image
 
 image:
-	docker buildx build --platform linux/amd64 ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+	docker buildx build --platform linux/amd64 ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' -f Dockerfile .
+
+image-pprof:
+	docker buildx build --platform linux/amd64 ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}-pprof:${VERSION}' -f Dockerfile.pprof .
 
 unittest:
 	./runUnitTest.sh

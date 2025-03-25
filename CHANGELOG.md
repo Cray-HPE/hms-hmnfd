@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.24.0] - 2025-03-25
+
+### Security
+
+- Updated image and module dependencies for security updates
+- Various code changes to accomodate module updates
+- Update version of Go to v1.24
+- Added image-pprof Makefile support
+- Resolved build warnings in Dockerfiles and docker compose files
+- Updated tests to look for 404 codes instead of 405 code due to gorilla/mux update
+- Internal tracking ticket: CASMHMS-6417
+
 ## [1.23.0] - 2025-01-08
 
 ### Added
