@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
-## [1.24.0] - 2025-03-18
+## [1.24.0] - 2025-03-25
 
 ### Security
 
