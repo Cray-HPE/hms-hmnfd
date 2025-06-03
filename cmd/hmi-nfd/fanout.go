@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2019-2021,2023] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019-2021,2023,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -132,13 +132,13 @@ func sendHsmScnSubscription(scn ScnSubscribe) error {
 	base.SetHTTPUserAgent(req, serviceName)
 
 	rsp, rerr := htrans.client.Do(req)
+	defer base.DrainAndCloseResponseBody(rsp)
 
 	if rerr != nil {
 		log.Println("ERROR sending POST to SM:", rerr)
 		//TODO: what now?
 		return rerr
 	} else {
-		defer rsp.Body.Close()
 		if (rsp.StatusCode == http.StatusOK) ||
 			(rsp.StatusCode == http.StatusNoContent) ||
 			(rsp.StatusCode == http.StatusAccepted) {
@@ -411,16 +411,18 @@ func sendSCNToSubscriber(sd Scn, subscriber string, url string) {
 				prunemap_mutex.Lock()
 				prunemap[subscriber] = true
 				prunemap_mutex.Unlock()
+				base.DrainAndCloseResponseBody(rsp)
 				return
 			}
 
 			log.Printf("ERROR sending SCN (attempt #%d), to '%s': %s",
 				retry, url, err.Error())
 			pauseIf(start)
+			base.DrainAndCloseResponseBody(rsp)
 			continue
 		}
 
-		rsp.Body.Close()
+		base.DrainAndCloseResponseBody(rsp)
 
 		//Check response code, should be 200
 		if rsp.StatusCode == http.StatusOK {
@@ -489,11 +491,13 @@ func pruneDeadWood() {
 		rsp, rerr := htrans.client.Do(req)
 		if rerr != nil {
 			log.Printf("ERROR sending GET to HSM for node states: %v", rerr)
+			base.DrainAndCloseResponseBody(rsp)
 			time.Sleep(2 * time.Second)
 			continue
 		}
 
 		body, berr := ioutil.ReadAll(rsp.Body)
+		base.DrainAndCloseResponseBody(rsp)
 		if berr != nil {
 			log.Printf("ERROR reading HSM response for node states: %v", berr)
 			time.Sleep(2 * time.Second)

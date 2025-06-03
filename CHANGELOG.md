@@ -15,6 +15,7 @@ These are changes to charts in support of:
 
 - Updated image and module dependencies
 - Explicitly closed all request and response bodies using hms-base functions
+- Fixed a few bugs where response bodies were not being drained/closed
 - Fixed bug with jq use in runSnyk.sh
 - Internal tracking ticket: CASMHMS-6397
 

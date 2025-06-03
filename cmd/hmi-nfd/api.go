@@ -644,6 +644,8 @@ func doSubscribePost(w http.ResponseWriter, r *http.Request) {
 	var jdata ScnSubscribe
 	var subscriber_xname string
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	errinst := "/" + URL_SUBSCRIBE
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -760,6 +762,8 @@ func doSubscribePost(w http.ResponseWriter, r *http.Request) {
 
 func doSubscribePatch(w http.ResponseWriter, r *http.Request) {
 	var jdata ScnSubscribe
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	errinst := "/" + URL_SUBSCRIBE
 	body, err := ioutil.ReadAll(r.Body)
@@ -904,6 +908,9 @@ func doSubscribePatch(w http.ResponseWriter, r *http.Request) {
 
 func doSubscribeDelete(w http.ResponseWriter, r *http.Request) {
 	var jdata NodeSubscriptionDelete
+
+	defer base.DrainAndCloseRequestBody(r)
+
 	errinst := "/" + URL_SUBSCRIBE
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -1128,6 +1135,8 @@ func makeSubscriptionKey_V1(jdata ScnSubscribe) string {
 
 func scnHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata Scn
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	errinst := "/" + URL_SCN
 
@@ -1446,6 +1455,8 @@ func doScn(jdata Scn) {
 /////////////////////////////////////////////////////////////////////////////
 
 func paramsPatch(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	errinst := "/" + URL_PARAMS
 	body, berr := ioutil.ReadAll(r.Body)
 
@@ -1516,6 +1527,8 @@ func paramsPatch(w http.ResponseWriter, r *http.Request) {
 /////////////////////////////////////////////////////////////////////////////
 
 func paramsGet(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	errinst := "/" + URL_PARAMS
 	rparams, err := genCurParamJson()
 	if err != nil {
@@ -1577,6 +1590,8 @@ func populateSubinfo(xname string, tt []string, subinfo *ScnSubscribe) {
 
 func subscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 	var sublist SubscriptionList
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	errinst := "/" + URL_SUBSCRIPTIONS
 
