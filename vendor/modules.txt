@@ -4,7 +4,7 @@ github.com/Cray-HPE/hms-base/v2
 # github.com/Cray-HPE/hms-hmetcd v1.13.0
 ## explicit; go 1.24
 github.com/Cray-HPE/hms-hmetcd
-# github.com/Cray-HPE/hms-msgbus v1.13.1-0.20250602165237-b6da8b301707
+# github.com/Cray-HPE/hms-msgbus v1.13.1
 ## explicit; go 1.24.0
 github.com/Cray-HPE/hms-msgbus
 # github.com/Cray-HPE/hms-xname v1.4.0
@@ -106,11 +106,11 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a
+# google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822
 ## explicit; go 1.23.0
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822
 ## explicit; go 1.23.0
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.72.2

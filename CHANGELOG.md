@@ -14,6 +14,9 @@ These are changes to charts in support of:
 ### Updated
 
 - Updated image and module dependencies
+	- hms-base v2.3.0
+	- hms-hmetcd v1.13.0
+	- hms-msgbus v1.13.1
 - Explicitly closed all request and response bodies using hms-base functions
 - Fixed a few bugs where response bodies were not being drained/closed
 - Fixed bug with jq use in runSnyk.sh
