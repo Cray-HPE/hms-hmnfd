@@ -60,7 +60,7 @@ services:
       - hmnfd
 
   vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.25.0
+    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.29.0
     environment:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
@@ -87,7 +87,7 @@ services:
       - hmnfd
 
   cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.35.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
     environment:
       - SMD_DBHOST=hmsds-postgres
       - SMD_DBPORT=5432
@@ -98,7 +98,7 @@ services:
     command: /entrypoint.sh smd-init
 
   cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.35.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
     environment:
       - POSTGRES_HOST=hmsds-postgres
       - POSTGRES_PORT=5432
@@ -143,7 +143,7 @@ services:
       - hmnfd
 
   cray-hms-hmcollector:
-    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.37.0
+    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.39.0
     environment:
       - LOG_LEVEL=TRACE
       - SM_URL=http://cray-smd:27779

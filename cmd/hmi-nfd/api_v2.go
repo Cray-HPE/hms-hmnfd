@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2019-2021,2023] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019-2021,2023,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -37,6 +37,9 @@ import (
 
 func subscriptionsAgentDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	// /subscriptions/{xname}/agent/{agent}
+
+	defer base.DrainAndCloseRequestBody(r)
+
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
 	agent, _ := uvars["agent"]
@@ -121,6 +124,9 @@ func subscriptionsAgentDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func subscriptionsXNameDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	// /subscriptions/{xname}/agent
+
+	defer base.DrainAndCloseRequestBody(r)
+
 	uvars := mux.Vars(r)
 	xn, _ := uvars["xname"]
 	xname := xnametypes.VerifyNormalizeCompID(xn)
@@ -189,6 +195,8 @@ func subscriptionsXNameDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func subscriptionsAgentPostHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata ScnSubscribe
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	// /subscriptions/{xname}/agents/{agent}
 	uvars := mux.Vars(r)
@@ -313,6 +321,8 @@ func subscriptionsAgentPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func subscriptionsAgentPatchHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata ScnSubscribe
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	// /subscriptions/{xname}/agents/{agent}
 	uvars := mux.Vars(r)
@@ -456,6 +466,8 @@ func subscriptionsAgentPatchHandler(w http.ResponseWriter, r *http.Request) {
 
 func subscriptionsXNameGetHandler(w http.ResponseWriter, r *http.Request) {
 	var sublist SubscriptionList
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	if r.Method != "GET" {
 		log.Printf("ERROR: request is not a GET.\n")

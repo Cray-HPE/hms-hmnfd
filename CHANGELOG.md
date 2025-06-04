@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.25.0] - 2025-06-04
+
+### Updated
+
+- Updated image and module dependencies
+	- hms-base v2.3.0
+	- hms-hmetcd v1.13.0
+	- hms-msgbus v1.13.1
+- Explicitly closed all request and response bodies using hms-base functions
+- Fixed a few bugs where response bodies were not being drained/closed
+- Fixed bug with jq use in runSnyk.sh
+- Internal tracking ticket: CASMHMS-6397
+
 ## [1.24.0] - 2025-03-25
 
 ### Security
