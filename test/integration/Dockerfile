@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-FROM artifactory.algol60.net/csm-docker/stable/hms-test:5.3.0
+FROM artifactory.algol60.net/csm-docker/stable/hms-test:5.4.0
 
 COPY functional/ /src/app/api
 COPY tavern_global_config_integration_test.yaml /src/app/tavern_global_config_integration_test.yaml

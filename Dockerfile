@@ -49,7 +49,7 @@ RUN set -ex && go build -v -tags musl -o /usr/local/bin/hmnfd github.com/Cray-HP
 
 
 ### Final Stage ###
-FROM artifactory.algol60.net/docker.io/alpine:3.21
+FROM artifactory.algol60.net/docker.io/alpine:3.22
 LABEL maintainer="Hewlett Packard Enterprise"
 EXPOSE 28600
 STOPSIGNAL SIGTERM
