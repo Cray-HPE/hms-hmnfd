@@ -118,7 +118,7 @@ services:
     networks:
       - hmnfd
   cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.43.0
     environment:
       - SMD_DBHOST=hmsds-postgres
       - SMD_DBPORT=5432
@@ -128,7 +128,7 @@ services:
       - hmnfd
     command: /entrypoint.sh smd-init
   cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.43.0
     environment:
       - POSTGRES_HOST=hmsds-postgres
       - POSTGRES_PORT=5432
@@ -191,7 +191,7 @@ services:
     depends_on:
       - kafka
   redfish-simulator:
-    image: artifactory.algol60.net/csm-docker/stable/hms-redfish-translation-service:1.29.0
+    image: artifactory.algol60.net/csm-docker/stable/hms-redfish-translation-service:1.31.0
     environment:
       - SCHEMA_VERSION=2019.1
       - LOG_LEVEL=TRACE

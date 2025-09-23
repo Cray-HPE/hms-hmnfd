@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 These are changes to charts in support of:
 
+## [1.26.0] - 2025-09-23
+
+### Security
+
+- Updated Alpine base image to pick up security fixes
+- Updated HMS image version dependencies
+- Internal tracking ticket: CASMHMS-6599
+
 ## [1.25.0] - 2025-06-04
 
 ### Updated
